@@ -83,12 +83,12 @@ ggplot(data = subset(df, exon_count <= upper_x),
 
 It seems that majority of the genes tend to be formed by a low number of exons. It can be seen that most of the genes (1424) are formed by 4 exons.
 
-### Add an additional column to the dataframe that contains the total length of introns for each gene
+## 2. Add an additional column to the dataframe that contains the total length of introns for each gene
 ```{r, echo = TRUE}
 df$intron_length <- df$genome_length - df$mrna_length
 ```
 
-### Make histograms and boxplots showing the distribution of total exon and total intron lengths, all as subplots in the same larger plot, where each dataset have a different color.
+## 3. Make histograms and boxplots showing the distribution of total exon and total intron lengths, all as subplots in the same larger plot, where each dataset have a different color.
 
 On the histograms, the number of bins should be exactly the same, and the x-axis should have the same scale. Comment the plot – are exons larger than introns or vice versa?
 
@@ -145,7 +145,7 @@ complete
 The histograms and box-plots are presented with a  logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. In them it can be seen that while most of exons (blue) tend to have shorter lengths -with a peak around 12 kB-, the introns (red) have a more right-tailed distribution, with generally longer lengths.
 
 
-### Are the mRNA lengths significantly longer than the total intron lengths, or is it the other way around?
+## 4. Are the mRNA lengths significantly longer than the total intron lengths, or is it the other way around?
 
 We need to test the difference of the means of both distributions. The Student's T test may be used if a normal distribution can be assumed. Otherwise, only the corresponding non parametric test ought to be used (Wilcoxon test).
 In order to test normality, a Q-Q plot between the observed lengths and the normal distribution was drawn.
@@ -172,7 +172,7 @@ Our null hypothesis is that there is no significant difference in the U-statisti
 wilcox.test(df$mrna_length, df$intron_length)$p.value
 ```
 
-### Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
+## 5. Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
 
 ```{r}
 cor.test(df$mrna_length, df$intron_length)
@@ -192,11 +192,15 @@ abline(model_2, col = "blue")
 #   geom_point() 
 ```
 
-```{r}
+## 6. What gene has the longest (total) exon length? How long is this mRNA and how many exons does it have?  Do this in a single line of R (without using “;”).  
+
+```{r, echo = TRUE}
 print(df[which.max(df$mrna_length), c(1,2,4)], row.names = FALSE)
 ```
 
-```{r}
+## 7. In genomics, we often want to fish out extreme examples – like all very short genes, or all very long genes. It is often helpful to make a function to do these tasks – it saves time in the long run.
+
+```{r, echo = TRUE}
 count_genes <- function( df, x1 = 0, x2 = max(df$mrna_length))
 {
  total.mrna <- length(df$name)
@@ -205,8 +209,6 @@ count_genes <- function( df, x1 = 0, x2 = max(df$mrna_length))
  return ( mrna.fraction * 100)
 }
 ```
-
-
 
 ```{r}
 x1 <- c(0, 1e4, 1e3, 100, 0)
