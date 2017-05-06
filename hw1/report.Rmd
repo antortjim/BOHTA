@@ -8,13 +8,12 @@ fig_caption: yes
 #fontsize: 50pt
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = FALSE)
 ```
 
-```{r, echo = FALSE, include = FALSE}
+```{r, include = FALSE}
 library("ggplot2")
-library("dplyr")
 library("cowplot")
 library("reshape2")
 theme_set(theme_bw())
@@ -27,100 +26,103 @@ theme_set(theme_bw())
 * mRNA molecule length (base pairs)
 * Genome length
 * Exon count
-```{r}
+```{r, echo = 1}
 df <- read.table("gene_lengths_v2.txt", header = T)
 head(df)
 ```
-
 
 ## 1. Make a histogram that shows what the typical number of exons is. Adjust the bins so that we can pinpoint exactly what number of exons that is the most common. Comment the plot. 
 
 #### Full distribution
 
-```{r, echo = FALSE}
-ggplot(data = df,
-       mapping = aes(x = exon_count, col = "black")) +
-  geom_histogram(binwidth = 1,
-                 fill = "cyan", alpha = 1) +
-  scale_x_continuous(breaks = seq(0, max(df$exon_count), 10)) +
-  scale_y_continuous(breaks = seq(0, 1500, 100)) +
-  labs(x = "Exon count per gene", y = "Number of genes") +
-  guides(col = FALSE)
+```{r}
+# ggplot(data = df,
+#        mapping = aes(x = exon_count, col = "black")) +
+#   geom_histogram(binwidth = 1,
+#                  fill = "cyan", alpha = 1) +
+#   scale_x_continuous(breaks = seq(0, max(df$exon_count), 10)) +
+#   scale_y_continuous(breaks = seq(0, 1500, 100)) +
+#   labs(x = "Exon count per gene", y = "Number of genes") +
+#   guides(col = FALSE)
 
-
-ggplot(data=df, aes(exon_count)) + geom_histogram(aes(fill=..count..), breaks=seq(-1, 150, by =1)) +
-  scale_x_continuous(name = "Number of Exons",
-                     breaks = seq(0, 150, 1),
-                     limits=c(0, 150))+
-  scale_y_continuous(name = "Exon Count",
+upper_x <- 150
+ggplot(data = df, aes(exon_count)) +
+  geom_histogram(aes(fill = -..count..), breaks = seq(from = 0, to = upper_x, by = 1)) +
+  scale_x_continuous(name = "Exon count per gene",
+                     breaks = seq(0, upper_x, 10),
+                     limits = c(0, upper_x))+
+  scale_y_continuous(name = "Number of genes",
                      breaks = seq(0, 1500, 100),
-                     limits=c(0, 1500))
-
-
+                     limits = c(0, 1500)) +
+  guides(fill = FALSE)
 ```
 
 **Figure 1** _Histogram showing the distribution of the exon counts. Our data set tends to concentrate between 3 and 5._
 
 #### First 20 bins
 
-```{r, echo = FALSE}
-
-ggplot(data = filter(df, exon_count < 21),
-       mapping = aes(x = exon_count, col = "black")) +
-  geom_histogram(binwidth = 1,
-                 fill = "cyan") +
+```{r}
+upper_x <- 20
+ggplot(data = subset(df, exon_count <= upper_x),
+       mapping = aes(x = exon_count)) +
+  geom_histogram(binwidth = 1, mapping = aes(
+                 fill = -..count..)) +
+  
   scale_x_continuous(breaks = seq(0, 20, 1)) +
   scale_y_continuous(breaks = seq(0, 1500, 100)) +
+  
   labs(x = "Exon count per gene", y = "Number of genes") +
-  guides(col = FALSE) +
+  guides(fill = FALSE) +
+  
   geom_hline(yintercept = max(table(df$exon_count)),
              linetype = "dashed") +
   geom_text(mapping = aes(x = which.max(table(df$exon_count)), y = max(table(df$exon_count))),
-            label =  max(table(df$exon_count)), vjust = -1)
+            label =  max(table(df$exon_count)), vjust = -.3)
 ```
 **Figure 2** _Inset of the above histogram for exon counts below 20. The mode of the distribution at 4 exons per gene becomes clearer._
 
 It seems that majority of the genes tend to be formed by a low number of exons. It can be seen that most of the genes (1424) are formed by 4 exons.
 
 ### Add an additional column to the dataframe that contains the total length of introns for each gene
-```{r}
-df$intron_length <- df[,3] - df[,2]
+```{r, echo = TRUE}
+df$intron_length <- df$genome_length - df$mrna_length
 ```
 
 ### Make histograms and boxplots showing the distribution of total exon and total intron lengths, all as subplots in the same larger plot, where each dataset have a different color.
 
 On the histograms, the number of bins should be exactly the same, and the x-axis should have the same scale. Comment the plot – are exons larger than introns or vice versa?
 
-```{r, include = FALSE, echo = FALSE}
-df2 <- melt(df %>% select(mrna_length, intron_length),
-            variable.name = "ExIn", value.name = "Length") %>% filter(Length > 0)
-```
-```{r, echo = FALSE}
-ggplot(data = df2 %>% filter(Length < 250000),
-       mapping = aes(x = Length, fill = ExIn)) +
+```{r}
+df2 <- subset(x = melt(data.frame(mrna_length = df$mrna_length,
+                                  intron_length = df$intron_length)),
+            subset = value != 0)
+
+
+ggplot(data = df2,
+       mapping = aes(x = value, fill = variable)) +
   geom_histogram(bins = 100, position = "dodge") +
-  scale_fill_discrete(name="",
-                      breaks=c("mrna_length", "intron_length"),
-                      labels=c("Exon length", "Intron length")) +
+  scale_fill_discrete(name = "",
+                      breaks = c("mrna_length", "intron_length"),
+                      labels = c("Exon", "Intron")) +
   labs(y = "Count") +
   theme(legend.position = "top")
 
 
 
-A <- ggplot(data = df2 %>% filter(Length < 250000),
-       mapping = aes(x = log10(Length), fill = ExIn)) +
+A <- ggplot(data = df2,
+       mapping = aes(x = log10(value), fill = variable)) +
   geom_histogram(bins = 100, position = "dodge") +
   scale_x_continuous(limits = c(1, 7),
                      breaks = seq(1, 7, 1)) +
-  scale_fill_discrete(name="",
-                      breaks=c("mrna_length", "intron_length"),
-                      labels=c("Exon length", "Intron length")) +
+  scale_fill_discrete(name = "",
+                      breaks = c("mrna_length", "intron_length"),
+                      labels = c("Exon", "Intron")) +
   labs(y = "Count") +
   theme(legend.position = "top")
 
 
-B <- ggplot(data = df2 %>% filter(ExIn == "mrna_length"),
-       mapping = aes(y = log10(Length), x = ExIn)) +
+B <- ggplot(data = subset(df2, variable == "mrna_length"),
+       mapping = aes(y = log10(value), x = variable)) +
   geom_boxplot(fill = "#F8766D", lwd=0.25, fatten = 2) +
   scale_y_continuous(limits = c(1, 7),
                      breaks = seq(1, 7, 1)) +
@@ -129,8 +131,8 @@ B <- ggplot(data = df2 %>% filter(ExIn == "mrna_length"),
         axis.title.y = element_blank()) +
   coord_flip()
 
-C <- ggplot(data = df2 %>% filter(ExIn == "intron_length"),
-       mapping = aes(y = log10(Length), x = ExIn)) +
+C <- ggplot(data = subset(df2, variable == "intron_length"),
+       mapping = aes(y = log10(value), x = variable)) +
   geom_boxplot(fill = "#00BFC4", lwd=0.25, fatten = 2) +
   scale_y_continuous(limits = c(1, 7),
                      breaks = seq(1, 7, 1)) +
@@ -141,15 +143,14 @@ C <- ggplot(data = df2 %>% filter(ExIn == "intron_length"),
 
 mylegend <- get_legend(A)
 
-title <- ggdraw() + draw_label("Distribution of intron and exons lengths", fontface='bold')
 
-plot_grid(title, plot_grid(plot_grid(A + theme(legend.position = "none") + labs(x = ""), 
+plot_grid(plot_grid(A + theme(legend.position = "none") + labs(x = ""), 
                     plot_grid(B + labs(y = ""), C, nrow = 2),
                     nrow = 2, align = "v", labels = c("A", "B")),
           mylegend,
-          nrow = 2, rel_heights = c(1, 0.1)), rel_heights = c(0.05, 1), nrow = 2)
+          nrow = 2, rel_heights = c(1, 0.1))
 ```
-**Figure 3** _Histograms and boxplots showing the intron and exon length distributions. The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb._
+**Figure 3. Distribution of intron and exons lengths** _Histograms and boxplots showing the intron and exon length distributions. The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb._
 
 
 The histograms and box-plots are presented with a  logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. In them it can be seen that while most of exons (blue) tend to have shorter lengths -with a peak around 12 kB-, the introns (red) have a more right-tailed distribution, with generally longer lengths.
@@ -160,7 +161,7 @@ The histograms and box-plots are presented with a  logarithmic scale in x-axis i
 We need to test the difference of the means of both distributions. The Student's T test may be used if a normal distribution can be assumed. Otherwise, only the corresponding non parametric test ought to be used (Wilcoxon test).
 In order to test normality, a Q-Q plot between the observed lengths and the normal distribution was drawn.
 
-```{r, echo = FALSE}
+```{r}
 lengths.only <- data.frame ( exon.length = df$mrna_length, intron.length = df$intron_length)
 exon.sd <- sd(lengths.only$exon.length)
 exponential.quantiles <- qnorm ((1:18489-0.5)/18489, exon.sd)
@@ -189,7 +190,7 @@ cor.test(df$mrna_length, df$intron_length)
 cor.test(df$mrna_length, df$exon_count)
 
 
-par(mfrow=c(1,2))
+par(mfrow = c(1,2))
 model_1 <- lm(df$intron_length ~ df$mrna_length)
 plot(df$mrna_length, df$intron_length, pch = 19)
 abline(model_1, col = "blue")
@@ -207,14 +208,12 @@ print(df[which.max(df$mrna_length), c(1,2,4)], row.names = FALSE)
 ```
 
 ```{r}
-count_genes <- function( df, x1=0, x2 = max(df$mrna_length))
+count_genes <- function( df, x1 = 0, x2 = max(df$mrna_length))
 {
  total.mrna <- length(df$name)
- mrna.interval <- sum(df$mrna_length>=x1 & df$mrna_length<=x2)
- mrna.fraction = mrna.interval/total.mrna
- return (
-   mrna.fraction * 100
- )
+ mrna.interval <- sum(df$mrna_length >= x1 & df$mrna_length <= x2)
+ mrna.fraction = mrna.interval / total.mrna
+ return ( mrna.fraction * 100)
 }
 ```
 
