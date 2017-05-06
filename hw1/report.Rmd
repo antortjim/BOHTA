@@ -98,27 +98,46 @@ df2 <- subset(x = melt(data.frame(mrna_length = df$mrna_length,
             subset = value != 0)
 
 
-A <- ggplot(data = df2,
-       mapping = aes(x = value, fill = variable)) +
+A.1 <- ggplot(data = df2,
+       mapping = aes(x = value / 1e6, fill = variable)) +
   geom_histogram(bins = 100, position = "dodge") +
   scale_fill_discrete(name = "",
                       breaks = c("mrna_length", "intron_length"),
                       labels = c("Exon", "Intron")) +
-  theme(legend.position = c(.85, .85), legend.direction = "horizontal") +
-  labs(x = "Base pair length", y = "Count") + 
+  theme(legend.direction = "horizontal") +
+  labs(x = "", y = "Count") + 
   guides(fill = guide_legend(override.aes = list(size = 1)))
-A <- ggdraw(A) +  draw_plot_label("A")
+mylegend <- get_legend(A.1)
+#A.1 <- ggdraw(A.1 + ) +  draw_plot_label("A")
 
-B <- ggplot(data = df2,
+
+
+B.1 <- ggplot(data = df2,
+       mapping = aes(y = value / 1e6, x = factor(1), fill = variable)) +
+  geom_boxplot(lwd = 0.25, fatten = 2) +
+  #scale_y_continuous() +
+  facet_grid(variable ~ .) +
+  theme(strip.text.y = element_blank(),
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank()) +
+  guides(fill = FALSE) +
+  ylab("Base pair length (Mb)") + 
+  xlab("") +
+  coord_flip()
+  #theme(plot.margin = unit(c(0, 0, 0, 1), "cm"))
+#B.1 <- ggdraw(B.1) + draw_plot_label("B")
+
+
+A.2 <- ggplot(data = df2,
        mapping = aes(x = log10(value), fill = variable)) +
   geom_histogram(bins = 100, position = "dodge") +
   scale_x_continuous(limits = c(1, 7),
                      breaks = seq(1, 7, 1)) +
   labs(x = "", y = "Count") +
   theme(legend.position = "none")
-B <- ggdraw(B) + draw_plot_label("B")
 
-C <- ggplot(data = df2,
+
+B.2 <- ggplot(data = df2,
        mapping = aes(y = log10(value), x = factor(1), fill = variable)) +
   geom_boxplot(lwd = 0.25, fatten = 2) +
   scale_y_continuous(limits = c(1, 7),
@@ -130,14 +149,33 @@ C <- ggplot(data = df2,
   guides(fill = FALSE) +
   labs(x = "") +
   ylab(bquote(log[10]~ '(Base pair length)')) +
-  coord_flip() +
-  theme(plot.margin = unit(c(0, 0, 0, 1), "cm"))
-C <- ggdraw(C) + draw_plot_label("C")
+  coord_flip()
+  
+```
+```{r}
+# Layout chunk
+cols_list <- list()
+A <- list(A.1, A.2)
+B <- list(B.1, B.2)
+library("grid")
 
-complete <- plot_grid(A, B, C,
-                      nrow = 3, align = "hv", rel_widths = rep(1, 3), rel_heights = c(5, 5, 2))
-          
-complete
+for(i in 1:2) {
+p <- ggplotGrob(A[[i]] + theme(legend.position = "none")) # convert to gtable
+q <- ggplotGrob(B[[i]]) # convert to gtable
+p.widths <- p$widths[1:3] # extract the first three widths, 
+                          # corresponding to left margin, y lab, and y axis
+q.widths <- q$widths[1:3] # same for mpg plot
+
+max.widths <- unit.pmax(p.widths, q.widths) # calculate maximum widths
+p$widths[1:3] <- max.widths # assign max widths to iris gtable
+q$widths[1:3] <- max.widths # assign max widths to mpg gtable
+
+# plot_grid() can work directly with gtables, so this works
+cols_list[[i]] <- plot_grid(p, q, ncol = 1)
+print(i)
+}
+
+plot_grid(cols_list[[1]], cols_list[[2]], ncol = 2, labels = "AUTO")
 ```
 **Figure 3. Distribution of intron and exons lengths** _Histograms and boxplots showing the intron and exon length distributions. The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb._
 
@@ -155,7 +193,7 @@ lengths.only <- data.frame ( exon.length = df$mrna_length, intron.length = df$in
 exon.sd <- sd(lengths.only$exon.length)
 normal.quantiles <- qnorm ((1:18489-0.5)/18489,mean=0, sd=exon.sd)
 exon.length <- sort(lengths.only$exon.length)
-new_set <- data.frame(exponential.quantiles, exon.length)
+new_set <- data.frame(normal.quantiles, exon.length)
 slope <- diff(normal.quantiles) / diff(exon.length) 
 ggplot(data = new_set, mapping = aes(x = normal.quantiles, y=exon.length)) + 
   geom_point() + labs(size= "Nitrogen",
@@ -164,6 +202,7 @@ ggplot(data = new_set, mapping = aes(x = normal.quantiles, y=exon.length)) +
                       title = "QQ-plot") + 
   geom_abline(intercept = 0, slope=1, color="red", linetype="dashed", size=1.0)
 
+```
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 3), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
 Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns. 
