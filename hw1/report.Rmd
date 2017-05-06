@@ -92,63 +92,52 @@ df$intron_length <- df$genome_length - df$mrna_length
 
 On the histograms, the number of bins should be exactly the same, and the x-axis should have the same scale. Comment the plot – are exons larger than introns or vice versa?
 
-```{r}
+```{r, fig.height = 6}
 df2 <- subset(x = melt(data.frame(mrna_length = df$mrna_length,
                                   intron_length = df$intron_length)),
             subset = value != 0)
 
 
-ggplot(data = df2,
+A <- ggplot(data = df2,
        mapping = aes(x = value, fill = variable)) +
   geom_histogram(bins = 100, position = "dodge") +
   scale_fill_discrete(name = "",
                       breaks = c("mrna_length", "intron_length"),
                       labels = c("Exon", "Intron")) +
-  labs(y = "Count") +
-  theme(legend.position = "top")
+  theme(legend.position = c(.85, .85), legend.direction = "horizontal") +
+  labs(x = "Base pair length", y = "Count") + 
+  guides(fill = guide_legend(override.aes = list(size = 1)))
+A <- ggdraw(A) +  draw_plot_label("A")
 
-
-
-A <- ggplot(data = df2,
+B <- ggplot(data = df2,
        mapping = aes(x = log10(value), fill = variable)) +
   geom_histogram(bins = 100, position = "dodge") +
   scale_x_continuous(limits = c(1, 7),
                      breaks = seq(1, 7, 1)) +
-  scale_fill_discrete(name = "",
-                      breaks = c("mrna_length", "intron_length"),
-                      labels = c("Exon", "Intron")) +
-  labs(y = "Count") +
-  theme(legend.position = "top")
+  labs(x = "", y = "Count") +
+  theme(legend.position = "none")
+B <- ggdraw(B) + draw_plot_label("B")
 
-
-B <- ggplot(data = subset(df2, variable == "mrna_length"),
-       mapping = aes(y = log10(value), x = variable)) +
-  geom_boxplot(fill = "#F8766D", lwd=0.25, fatten = 2) +
+C <- ggplot(data = df2,
+       mapping = aes(y = log10(value), x = factor(1), fill = variable)) +
+  geom_boxplot(lwd = 0.25, fatten = 2) +
   scale_y_continuous(limits = c(1, 7),
                      breaks = seq(1, 7, 1)) +
-  theme(axis.text.y = element_blank(), 
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank()) +
-  coord_flip()
+  facet_grid(variable ~ .) +
+  theme(strip.text.y = element_blank(),
+        axis.text.y = element_blank(), 
+        axis.ticks.y = element_blank()) +
+  guides(fill = FALSE) +
+  labs(x = "") +
+  ylab(bquote(log[10]~ '(Base pair length)')) +
+  coord_flip() +
+  theme(plot.margin = unit(c(0, 0, 0, 1), "cm"))
+C <- ggdraw(C) + draw_plot_label("C")
 
-C <- ggplot(data = subset(df2, variable == "intron_length"),
-       mapping = aes(y = log10(value), x = variable)) +
-  geom_boxplot(fill = "#00BFC4", lwd=0.25, fatten = 2) +
-  scale_y_continuous(limits = c(1, 7),
-                     breaks = seq(1, 7, 1)) +
-  theme(axis.text.y = element_blank(), 
-        axis.ticks.y = element_blank(),
-        axis.title.y = element_blank()) +
-  coord_flip()
-
-mylegend <- get_legend(A)
-
-
-plot_grid(plot_grid(A + theme(legend.position = "none") + labs(x = ""), 
-                    plot_grid(B + labs(y = ""), C, nrow = 2),
-                    nrow = 2, align = "v", labels = c("A", "B")),
-          mylegend,
-          nrow = 2, rel_heights = c(1, 0.1))
+complete <- plot_grid(A, B, C,
+                      nrow = 3, align = "hv", rel_widths = rep(1, 3), rel_heights = c(5, 5, 2))
+          
+complete
 ```
 **Figure 3. Distribution of intron and exons lengths** _Histograms and boxplots showing the intron and exon length distributions. The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb._
 
