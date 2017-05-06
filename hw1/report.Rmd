@@ -153,16 +153,16 @@ In order to test normality, a Q-Q plot between the observed lengths and the norm
 ```{r}
 lengths.only <- data.frame ( exon.length = df$mrna_length, intron.length = df$intron_length)
 exon.sd <- sd(lengths.only$exon.length)
-exponential.quantiles <- qnorm ((1:18489-0.5)/18489, exon.sd)
+normal.quantiles <- qnorm ((1:18489-0.5)/18489,mean=0, sd=exon.sd)
 exon.length <- sort(lengths.only$exon.length)
 new_set <- data.frame(exponential.quantiles, exon.length)
-ggplot(data = new_set, mapping = aes(x = exponential.quantiles, y=exon.length)) + 
+slope <- diff(normal.quantiles) / diff(exon.length) 
+ggplot(data = new_set, mapping = aes(x = normal.quantiles, y=exon.length)) + 
   geom_point() + labs(size= "Nitrogen",
                       x = "Normal Quantiles",
                       y = "Exon Lengths",
-                      title = "QQ-plot") + geom_abline(intercept = 0, color="red", 
-                                                      linetype="dashed", size=1.5)
-```
+                      title = "QQ-plot") + 
+  geom_abline(intercept = 0, slope=1, color="red", linetype="dashed", size=1.0)
 
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 3), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
@@ -181,11 +181,11 @@ cor.test(df$mrna_length, df$exon_count)
 
 par(mfrow = c(1,2))
 model_1 <- lm(df$intron_length ~ df$mrna_length)
-plot(df$mrna_length, df$intron_length, pch = 19)
+plot(df$mrna_length, df$intron_length, pch = 19, ylab="Intron Lengths", xlab = "Exon Lengths")
 abline(model_1, col = "blue")
 
 model_2 <- lm(df$exon_count ~ df$mrna_length)
-plot(df$mrna_length, df$exon_count, pch = 19)
+plot(df$mrna_length, df$exon_count, pch = 19, ylab="Exon Count", xlab = "Exon Lengths")
 abline(model_2, col = "blue")
 # 
 # ggplot(data = df, mapping = aes(x = df$intron_length, y = df$mrna_length)) + 
