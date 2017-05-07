@@ -230,6 +230,7 @@ Intron.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = 
 
 plot_grid(Exon.qqplot, Intron.qqplot)
 ```
+Each point in the two plots above carries an observed component of intron or exon length (x-axis), and an expected component drawn from a normal distribution (y-axis) with a mean and standard deviation equal to the that of the intron or exon length sets. Both plots show significant deviations from the abline which maps evenly increasing values of a normal distribution, to itself. 
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 3), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
 Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns. 
