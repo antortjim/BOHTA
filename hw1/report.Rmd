@@ -1,7 +1,8 @@
 ---
 title: "Assignment 1"
-author: "BOHTA group 6"
-date: "May 4, 2017"
+group: "BOHTA group 6"
+authors: Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent
+date: "May 8, 2017"
 output: pdf_document
 number_sections: true
 fig_caption: yes
@@ -91,6 +92,7 @@ The majority of genes tend to be formed by a relatively low number of exons (Fig
 df$intron_length <- df$genome_length - df$mrna_length
 head(df)
 ```
+Basically, the total length of introns for each gene is obtained by substracting the length of the mRNA (the exon length in this case) from the entire genome length.
 
 ## 3. Make histograms and boxplots showing the distribution of total exon and total intron lengths, all as subplots in the same larger plot, where each dataset have a different color.
 
@@ -188,9 +190,9 @@ plot_grid(plot_grid(cols_list[[1]], cols_list[[2]], ncol = 2, labels = "AUTO"), 
 ggsave("exercise3.png")
 ```
 
-**Figure 3. Distribution of intron and exons lengths in linear (A) and log10 (B) scale** _The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb._
+**Figure 3. Distribution of intron and exons lengths in linear (A) and log10 (B) scale** _The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb, as shown in the histograms (top) and boxplots (bottom)._
 
-The histograms and box-plots in Figure 3.B are presented with a logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. They show that while most of exons (red) tend to have shorter lengths -with a peak around 12 kB-, the introns (blue) have a more right-tailed distribution, with generally longer lengths, coveeing an extremly wide span.
+The histograms and box-plots in Figure 3.B are presented with a logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. They show that while most of exons (red) tend to have shorter lengths -with a peak around 12 kB-, the introns (blue) have a more right-tailed distribution, with generally longer lengths, covering an extremly wide span.
 
 
 ## 4. Are the mRNA lengths significantly longer than the total intron lengths, or is it the other way around?
@@ -233,17 +235,17 @@ plot_grid(Exon.qqplot, Intron.qqplot)
 **Figure 4** _QQplots of exon and intron length against normal distribution_. _Each point in the two plots above carries an observed component of intron or exon length (x-axis), and an expected component drawn from a normal distribution (y-axis) with a mean and standard deviation equal to the that of the intron or exon length sets. Both plots show significant deviations from the abline which maps evenly increasing values of a normal distribution, to itself._
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 4), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
-Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns. 
+Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns of the data set. 
 
 ```{r}
 wilcox.test(df$mrna_length, df$intron_length, alternative = "two.sided")
 ```
 
-As our p-value is lower than 0.05 (< 2.2e-16), we can reject the null hypothesis and accept the alternative hypothesis, that is, there is a significant difference in the U-statistic between the length of the exons and introns. This means that the introns are significantly longer than the exons.
+As our p-value is < 2.2e-16, it is below the significance threshold of 0.05, we can reject the null hypothesis and accept the alternative hypothesis, that is, there is a significant difference in the U-statistic between the length of the exons and introns. In addition to the previous observations of the lengths of introns and exons, we can conclude that the introns are significantly longer than the exons of the data set.
 
 ## 5. Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
 
-Since there's no biological relationship between the length of the mRNA molecule and the length of the introns in the transcribed gene, we cannot expect a clear relationship between both. There could be correlation due to randomness. dependent of the length of the introns in the gene it comes from, we
+Since there's no biological relationship between the length of the mRNA molecule and the length of the introns in the transcribed gene, we cannot expect a clear relationship between both. There could be correlation due to randomness dependent of the length of the introns in the gene it comes from. In order to determine whether total exons length is more correlated to the total intron length than the number of exons, we have calculated the Pearson correlation coefficient for both cases.
 
 
 ```{r, echo = TRUE, include = TRUE}
@@ -266,13 +268,15 @@ abline(model_2, col = "blue")
 #   geom_point() 
 ```
 
-Based on the correlation scores of 0.347 for exon VS intron length and 0.639 for exon length VS number of exons, it can be concluded that whereas there is a positive correlation in both cases, they are not very strong. It is proven though that the exon´s length is more correlated with the number of exons than with the length of the introns of the genes belonging our data set.
+Based on the correlation scores of 0.347 for exon VS intron length and 0.639 for exon length VS number of exons and the scatter plots, it can be concluded that whereas there is a positive correlation in both cases, they are not very strong. It is proven though that the exon´s length is more correlated with the number of exons than with the length of the introns of the genes belonging our data set.
 
 ## 6. What gene has the longest (total) exon length? How long is this mRNA and how many exons does it have?  Do this in a single line of R (without using “;”).  
 
 ```{r, echo = TRUE}
 print(df[which.max(df$mrna_length), c(1,2,4)], row.names = FALSE)
 ```
+
+As can be seen above, the gene that has the longest total exon length is MUC16, with a length of 43815 base pairs and 84 exons.
 
 ## 7. In genomics, we often want to fish out extreme examples – like all very short genes, or all very long genes. It is often helpful to make a function to do these tasks – it saves time in the long run.
 
