@@ -199,12 +199,14 @@ We need to test the difference of the means of both distributions. The Student's
 In order to test normality, a Q-Q plot between the observed lengths and the normal distribution was drawn.
 
 ```{r}
+lengths.only <- data.frame(exon.length = df$mrna_length, intron.length = df$intron_length)
 exon.mean <- mean(lengths.only$exon.length)
 exon.sd <- sd(lengths.only$exon.length)
 normal.quantiles <- qnorm(((1:nrow(df)) - 0.5) / nrow(df), mean = exon.mean, sd = exon.sd)
 exon.length <- sort(lengths.only$exon.length)
 new_set <- data.frame(normal.quantiles, exon.length)
 slope <- diff(normal.quantiles) / diff(exon.length) 
+
 Exon.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = exon.length)) + 
   geom_point() + labs(size = "Nitrogen",
                       x = "Normal Quantiles",
@@ -212,13 +214,13 @@ Exon.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = ex
                       title = "QQ-plot ~ Exon Lengths") + 
   geom_abline(intercept = 0, slope = 1, color="red", linetype="dashed", size=1.0)
 
-
 intron.mean <- mean(lengths.only$intron.length)
 intron.sd <- sd(lengths.only$intron.length)
 normal.quantiles <- qnorm(((1:nrow(df)) - 0.5) / nrow(df), mean = intron.mean, sd = intron.sd)
 intron.length <- sort(lengths.only$intron.length)
 new_set <- data.frame(normal.quantiles, intron.length)
 slope <- diff(normal.quantiles) / diff(intron.length) 
+
 Intron.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = intron.length)) + 
   geom_point() + labs(size = "Nitrogen",
                       x = "Normal Quantiles",
@@ -227,8 +229,6 @@ Intron.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = 
   geom_abline(intercept = 0, slope = 1, color="red", linetype="dashed", size=1.0)
 
 plot_grid(Exon.qqplot, Intron.qqplot)
-
-
 ```
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 3), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
