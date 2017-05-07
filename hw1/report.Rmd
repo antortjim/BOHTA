@@ -300,7 +300,7 @@ result
 library("ggalt")
 df2 <- data.frame(x = 100 * x1 / max(df$mrna_length),
                  xend = 100 * x2 / max(df$mrna_length),
-                 test = factor(1:5),
+                 test = factor(1:5, levels = 5:1),
                  label = round(result, digits = 2))
 df2
 gg <- ggplot(data = df2,
