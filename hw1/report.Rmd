@@ -230,7 +230,7 @@ Intron.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = 
 
 plot_grid(Exon.qqplot, Intron.qqplot)
 ```
-**Figure 4** _QQplots og exon and intron length against normal distribution_. _Each point in the two plots above carries an observed component of intron or exon length (x-axis), and an expected component drawn from a normal distribution (y-axis) with a mean and standard deviation equal to the that of the intron or exon length sets. Both plots show significant deviations from the abline which maps evenly increasing values of a normal distribution, to itself._
+**Figure 4** _QQplots of exon and intron length against normal distribution_. _Each point in the two plots above carries an observed component of intron or exon length (x-axis), and an expected component drawn from a normal distribution (y-axis) with a mean and standard deviation equal to the that of the intron or exon length sets. Both plots show significant deviations from the abline which maps evenly increasing values of a normal distribution, to itself._
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 4), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
 Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns. 
@@ -239,9 +239,12 @@ Our null hypothesis is that there is no significant difference in the U-statisti
 wilcox.test(df$mrna_length, df$intron_length, alternative = "two.sided")
 ```
 
+As our p-value is lower than 0.05 (< 2.2e-16), we can reject the null hypothesis and accept the alternative hypothesis, that is, there is a significant difference in the U-statistic between the length of the exons and introns. This means that the introns are significantly longer than the exons.
+
 ## 5. Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
 
 Since there's no biological relationship between the length of the mRNA molecule and the length of the introns in the transcribed gene, we cannot expect a clear relationship between both. There could be correlation due to randomness. dependent of the length of the introns in the gene it comes from, we
+
 
 ```{r, echo = TRUE, include = TRUE}
 cor(df$mrna_length, df$intron_length, method = "spearman")
@@ -262,6 +265,8 @@ abline(model_2, col = "blue")
 # ggplot(data = df, mapping = aes(x = df$intron_length, y = df$mrna_length)) + 
 #   geom_point() 
 ```
+
+Based on the correlation scores of 0.347 for exon VS intron length and 0.639 for exon length VS number of exons, it can be concluded that whereas there is a positive correlation in both cases, they are not very strong. It is proven though that the exon´s length is more correlated with the number of exons than with the length of the introns of the genes belonging our data set.
 
 ## 6. What gene has the longest (total) exon length? How long is this mRNA and how many exons does it have?  Do this in a single line of R (without using “;”).  
 
