@@ -221,7 +221,7 @@ As we are comparing two data subsets that are not following a normal distributio
 Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns. 
 
 ```{r}
-wilcox.test(df$mrna_length, df$intron_length, alternative = "two.sided")$p.value
+wilcox.test(df$mrna_length, df$intron_length, alternative = "two.sided")
 ```
 
 ## 5. Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
@@ -232,7 +232,7 @@ Since there's no biological relationship between the length of the mRNA molecule
 cor(df$mrna_length, df$intron_length, method = "spearman")
 cor(df$mrna_length, df$intron_length, method = "pearson")
 
-cor(df$mrna_length, df$exon_count, method = "spearman")
+cor(df$exon_count, df$intron_length, method = "spearman")
 cor(df$mrna_length, df$exon_count, method = "pearson")
 
 par(mfrow = c(1,2))
