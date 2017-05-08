@@ -247,7 +247,7 @@ As our p-value is < 2.2e-16, it is below the significance threshold of 0.05, we 
 ## 5. Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
 
 
-In order to determine whether total exons length is more correlated to the total intron length than the number of exons, we have calculated the Spearman correlation coefficient for both cases.
+In order to determine whether total exons length is more correlated to the total intron length than the number of exons, we have calculated the Pearsons' correlation coefficient for both cases.
 
 
 ```{r, echo = F, include = TRUE}
@@ -267,7 +267,7 @@ text(x = 30000, y = 150, labels = paste("r2 = ", r2, sep = ""))
      
 ```
 
-**Figure 5** _Scatterplot of the studied variables showing regression lines and Pearson correlation coefficient._
+**Figure 5** _Scatterplot of the studied variables showing regression lines and Pearson correlation coefficient. The cofficient sign (+/-) and range (from -1 to +1) indicates the direction of monotonicity and degree of linearity of the two variables under question, respectively._
 
 Based on the correlation scores of 0.35 for exon VS intron length and 0.64 for exon length VS number of exons and the scatter plots, it can be concluded that whereas there is a positive correlation in both cases, they are not very strong. It is proven though that the exon´s length is more correlated with the number of exons than with the length of the introns of the genes belonging our data set.
 
