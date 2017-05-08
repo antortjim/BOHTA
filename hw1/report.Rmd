@@ -98,11 +98,12 @@ Basically, the total length of introns for each gene is obtained by substracting
 
 On the histograms, the number of bins should be exactly the same, and the x-axis should have the same scale. Comment the plot – are exons larger than introns or vice versa?
 
-```{r}
+```{r, include = F, echo = F}
 df2 <- subset(x = melt(data.frame(mrna_length = df$mrna_length,
                                   intron_length = df$intron_length)),
             subset = value != 0)
-
+```
+```{r}
 
 A.1 <- ggplot(data = df2,
        mapping = aes(x = value / 1e6, fill = variable)) +
@@ -245,30 +246,30 @@ As our p-value is < 2.2e-16, it is below the significance threshold of 0.05, we 
 
 ## 5. Continuing on the same question: is the total exon length more correlated to the total intron length than the number of exons? Show this both with a plot and with correlation scores. Comment on your result
 
-Since there's no biological relationship between the length of the mRNA molecule and the length of the introns in the transcribed gene, we cannot expect a clear relationship between both. There could be correlation due to randomness dependent of the length of the introns in the gene it comes from. In order to determine whether total exons length is more correlated to the total intron length than the number of exons, we have calculated the Pearson correlation coefficient for both cases.
+
+In order to determine whether total exons length is more correlated to the total intron length than the number of exons, we have calculated the Spearman correlation coefficient for both cases.
 
 
-```{r, echo = TRUE, include = TRUE}
-cor(df$mrna_length, df$intron_length, method = "spearman")
-cor(df$mrna_length, df$intron_length, method = "pearson")
-
-cor(df$exon_count, df$intron_length, method = "spearman")
-cor(df$mrna_length, df$exon_count, method = "pearson")
+```{r, echo = F, include = TRUE}
+r1 <- round(cor(df$mrna_length, df$intron_length, method = "pearson"), digits = 2)
+r2 <- round(cor(df$mrna_length, df$exon_count, method = "pearson"), digits = 2)
 
 par(mfrow = c(1,2))
 model_1 <- lm(df$intron_length ~ df$mrna_length)
 plot(df$mrna_length, df$intron_length, pch = 19, xlab = "mRNA length", ylab = "Introns Length")
 abline(model_1, col = "blue")
+text(x = 30000, y = 1500000, labels = paste("r2 = ", r1, sep = ""))
 
 model_2 <- lm(df$exon_count ~ df$mrna_length)
-plot(df$mrna_length, df$exon_count, pch = 19, xlab = "mRNA length", ylab = "Exon Count")
+plot(df$mrna_length, df$exon_count, pch = 19, xlab = "mRNA length", ylab = "Exon count")
 abline(model_2, col = "blue")
-# 
-# ggplot(data = df, mapping = aes(x = df$intron_length, y = df$mrna_length)) + 
-#   geom_point() 
+text(x = 30000, y = 150, labels = paste("r2 = ", r2, sep = ""))
+     
 ```
 
-Based on the correlation scores of 0.347 for exon VS intron length and 0.639 for exon length VS number of exons and the scatter plots, it can be concluded that whereas there is a positive correlation in both cases, they are not very strong. It is proven though that the exon´s length is more correlated with the number of exons than with the length of the introns of the genes belonging our data set.
+**Figure 5** _Scatterplot of the studied variables showing regression lines and Pearson correlation coefficient._
+
+Based on the correlation scores of 0.35 for exon VS intron length and 0.64 for exon length VS number of exons and the scatter plots, it can be concluded that whereas there is a positive correlation in both cases, they are not very strong. It is proven though that the exon´s length is more correlated with the number of exons than with the length of the introns of the genes belonging our data set.
 
 ## 6. What gene has the longest (total) exon length? How long is this mRNA and how many exons does it have?  Do this in a single line of R (without using “;”).  
 
@@ -324,5 +325,6 @@ ggsave(filename = "exercise_7.png", plot = gg)
 gg
 ```
 
+**Figure 6** _Dumbbell plot of the intervals selected by the x1 and x2 pairs and the resulting percentage of the dataset within that interval._
 
 
