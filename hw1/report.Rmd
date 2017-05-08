@@ -1,17 +1,17 @@
 ---
 title: "Assignment 1"
 group: "BOHTA group 6"
-authors: Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent
+authors: "Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent"
 date: "May 8, 2017"
 output: pdf_document
-number_sections: true
-fig_caption: yes
-#fontsize: 50pt
 ---
+
+
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(include = TRUE, echo = FALSE, fig.height = 4)
 ```
+
 
 ```{r, include = FALSE}
 library("ggplot2")
@@ -191,9 +191,9 @@ plot_grid(plot_grid(cols_list[[1]], cols_list[[2]], ncol = 2, labels = "AUTO"), 
 ggsave("exercise3.png")
 ```
 
-**Figure 3. Distribution of intron and exons lengths in linear (A) and log10 (B) scale** _The exon median length lies around 2kb whereas the intron median length lies around a value 10 times bigger than the intron's, around 20kb, as shown in the histograms (top) and boxplots (bottom)._
+**Figure 3. Distribution of intron and exons lengths in linear (A) and log10 (B) scale**. _As can be seen in the histograms (top) and the boxplots (bottom), the median of the introns is one order of magnitude bigger than the median of the exons._
 
-The histograms and box-plots in Figure 3.B are presented with a logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. They show that while most of exons (red) tend to have shorter lengths -with a peak around 12 kB-, the introns (blue) have a more right-tailed distribution, with generally longer lengths, covering an extremly wide span.
+The histograms and box-plots in Figure 3.B are presented with a logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. They show that while most of exons (red) tend to have shorter lengths -with a peak around 2 kB-, the introns (blue) have a more right-tailed distribution, with generally longer lengths, covering an extremly wide span.
 
 
 ## 4. Are the mRNA lengths significantly longer than the total intron lengths, or is it the other way around?
@@ -299,7 +299,7 @@ Test this function with the mRNA lengths using the the five settings below:
 * x1=100 and x2=1000; 
 * x1=0 and x2=100.
 
-
+Results:
 ```{r}
 x1 <- c(0, 1e4, 1e3, 100, 0)
 x2 <- c(max(df$mrna_length), max(df$mrna_length), 1e4, 1e3, 100)
@@ -327,4 +327,5 @@ gg
 
 **Figure 6** _Dumbbell plot of the intervals selected by the x1 and x2 pairs and the resulting percentage of the dataset within that interval._
 
+## 8. Appendix
 
