@@ -1,0 +1,82 @@
+---
+title: "Assignment 2"
+group: "BOHTA group 6"
+authors: "Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent"
+date: "May 15, 2017"
+output: pdf_document
+---
+
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(include = TRUE, echo = FALSE, fig.height = 4)
+```
+
+
+```{r, include = FALSE}
+library("ggplot2")
+library("cowplot")
+library("reshape2")
+library("dplyr")
+library("VennDiagram")
+theme_set(theme_bw())
+```
+
+
+## 0. Load the data with percent overlap/non-overlap per chromosome
+
+```{r, echo = 1}
+df <- read.table(file="coverage.txt")
+```
+
+# Part 1
+## (a)What are the first five genomic nucleotides from the first exon of this transcript? 
+5’ UTR: TTTCC
+\newline 
+First coding exon: TACCA
+
+## (b) Look at the raw mRNA sequence of AK002007, from the database it actually comes from. What are the first five nucleotides?
+
+5’ UTR: AAACC
+\newline 
+First coding exon:ATGGT
+
+## (c) How do you explain the discrepancy (maximum 5 lines)?
+
+The database contains DNA sequences derived from mRNA squences (cDNA). Both sequences are complementary to one another.
+
+# Part 2
+## (a)
+
+
+```{r fig.height=3, echo=FALSE}
+sorted.index <- order(as.numeric(substring(df$V1,4)))
+df <- df [sorted.index,]
+# stat="idenity" to plot the values in V5 directly instead of a count/frequency
+ggplot(data = df[(df$V2 == 1 & df$V1 != "genome"),], aes(x = V1, y = V5)) + 
+  geom_bar(stat="identity", color="red")
+```
+**Figure 1.** **A** _Histogram showing the distribution of the exon counts. Even though most of the genes contain less than 60 exons, as many as 150 may be found in some of them._ **B** _Detail for genes with max. 20 exons. The mode can be visualized at 3-5 exons per gene (max found at 4). The number of exons per gene decreases steadily beyond it._
+
+
+```{r fig.height=3, fig.width=3, echo=FALSE}
+df2 <- read.table(file ="AtoBoverlap.bed")
+df3 <- read.table(file ="BtoAoverlap.bed")
+ERa <- read.table(file ="ERa_hg18.bed", skip=1)
+ERb <- read.table(file ="ERb_hg18.bed", skip=1)
+AtoBoverlap.count <- sum(df2$V4)
+BtoAoverlap.count <- sum(df3$V4)
+ERa.size <- length(ERa$V1)
+ERb.size <- length(ERb$V1)
+
+draw.pairwise.venn(ERa.size, ERb.size, 345, category = c("ERa", "ERb"), lty = rep("blank",2), fill = c("skyblue", "red"), alpha = rep(0.5, 2))
+```
+## 8. Appendix
+## Command line entries
+
+bedtools genomecov -i ERa_hg18.bed -g genome.txt > coverage.txt
+bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
+bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
+
+```{r code=readLines(knitr::purl("assignmentii.Rmd", documentation = 0)), eval = FALSE}
+```
