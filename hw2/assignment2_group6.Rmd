@@ -6,11 +6,11 @@ output: pdf_document
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(include = TRUE, echo = FALSE, fig.height = 4)
+knitr::opts_chunk$set(include = FALSE, echo = FALSE, fig.height = 4)
 ```
 
 
-```{r, include = FALSE}
+```{r}
 library("ggplot2")
 library("cowplot")
 library("reshape2")
@@ -47,22 +47,23 @@ This could be due to the aligner penalizing opening the intron gap just to align
 # Part 2
 ## (a)
 
-```{r, eval = F, echo = T, engine = "bash"}
-# Calculates the percent coverage of ERa chip-on-chip reads by chromosome
-bedtools genomecov -i ERa_hg18.bed -g hg18_chrom_sizes.txt > coverage.txt
-# Calculates number of interval overlaps between ERa and ERb
-# Reports multiple overlaps as a single occurrence
-bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
-bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
+Bedtools commands to preprocess data before R
+```{r, include = T, eval = F, echo = T, engine = "bash"}
+cat ERa_hg18.bed ERb_hg18.bed > full.bed
+bedtools sort -i full.bed > full.sorted.bed
+bedtools merge -i full.sorted.bed > merged.bed
+# Calculates the percent coverage by chromosome
+bedtools genomecov -i merged.bed -g hg18_chrom_sizes.txt > coverage.txt
 ```
 
-
-```{r fig.height = 3, include = c(5, 6), echo = c(1, 5)}
+R
+```{r fig.height = 3, include = T, echo = c(1,2,7), warning = F, messages = F}
 df <- read.table(file = "coverage.txt",
-                 col.names = c("chr", "bit", "start", "end", "fraction"))
+                col.names = c("chr", "bit", "start", "end", "fraction"))
 
 # sort by chromosome
-df$chr <- factor(df$chr %>% as.character, levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
+df$chr <- factor(as.character(df$chr),
+                 levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
 sorted.index <- order(as.numeric(substring(df$chr, 4)))
 df <- df[sorted.index,]
 head(df)
@@ -71,14 +72,45 @@ head(df)
 # stat="idenity" to plot the values in fraction directly instead of a count/frequency
 ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
        mapping = aes(x = chr, y = fraction)) + 
-  geom_bar(stat = "identity", fill = "red")
+  geom_bar(stat = "identity", fill = "green")
 
 ggsave("fraction_barplot.png")
 ```
 **Figure 1.** **A** _Barplot showing the distribution of the exon counts. Even though most of the genes contain less than 60 exons, as many as 150 may be found in some of them._ **B** _Detail for genes with max. 20 exons. The mode can be visualized at 3-5 exons per gene (max found at 4). The number of exons per gene decreases steadily beyond it._
 
+```{r, include = T, eval = F, echo = T, engine = "bash"}
+bedtools genomecov -i ERa_hg18.bed -g hg18_chrom_sizes.txt > ERa.txt
+bedtools genomecov -i ERb_hg18.bed -g hg18_chrom_sizes.txt > ERb.txt
+```
 
-```{r fig.height=3, fig.width=3, echo=FALSE}
+
+```{r fig.height = 3, include = 8, echo = FALSE, warning = F, messages = F}
+df1 <- rbind(cbind(read.table(file = "ERa.txt"), protein = "ERa"),
+             cbind(read.table(file = "ERb.txt"), protein = "ERb"))
+colnames(df1) <- c("chr", "bit", "start", "end", "fraction", "protein")
+df1$chr <- factor(as.character(df1$chr),
+                 levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
+sorted.index <- order(as.numeric(substring(df1$chr, 4)))
+df1 <- df1[sorted.index,]
+ggplot(data = df1[(df1$bit == 1 & df1$chr != "genome"),],
+       mapping = aes(x = chr, y = fraction, fill = protein)) + 
+  geom_bar(stat = "identity", position = "dodge")
+
+```
+
+
+## (b)
+
+Bedtools commands to preprocess data before R
+```{r, include = T, eval = F, echo = T, engine = "bash"}
+# Calculates number of interval overlaps between ERa and ERb
+# Reports multiple overlaps as a single occurrence
+bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
+bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
+```
+
+R
+```{r fig.height=3, fig.width=3, echo=FALSE, include = 9}
 df2 <- read.table(file ="AtoBoverlap.bed")
 df3 <- read.table(file ="BtoAoverlap.bed")
 ERa <- read.table(file ="ERa_hg18.bed", skip = 1)
@@ -96,7 +128,7 @@ draw.pairwise.venn(ERa.size, ERb.size, cross.area = 345,
 ```
 ## 8. Appendix
 
-```{r}
+```{r, include = T}
 sessionInfo()
 ```
 
