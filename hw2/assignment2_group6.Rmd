@@ -1,12 +1,9 @@
 ---
-title: "Assignment 2"
-group: "BOHTA group 6"
-authors: "Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent"
+title: "Assignment 2 group 6"
+author: "Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent"
 date: "May 15, 2017"
 output: pdf_document
 ---
-
-
 
 ```{r, include = FALSE}
 knitr::opts_chunk$set(include = TRUE, echo = FALSE, fig.height = 4)
@@ -22,13 +19,6 @@ library("VennDiagram")
 theme_set(theme_bw())
 ```
 
-
-## 0. Load the data with percent overlap/non-overlap per chromosome
-
-```{r, echo = 1}
-df <- read.table(file="coverage.txt")
-```
-
 # Part 1
 ## (a)What are the first five genomic nucleotides from the first exon of this transcript? 
 AAAGG
@@ -42,6 +32,9 @@ When we check the raw mRNA sequence of AK002007, it can be seen that the first f
 
 ## (c) How do you explain the discrepancy (maximum 5 lines)?
 
+
+### TODO Include capture from UCSCBrowser and Isabella's illustration showing the mess
+
 **What is going on?**
 
 The sequencing process generated a truncated version of the mature mRNA starting at one of the last exons of the DICER1 gene. This truncated molecule bears the last 11 nucleotides of exon 21/27 ("gaagcaaaaag") and continues to hold the nucleotides in exon 22/27. Nevertheless, the aligner has mismapped these first nucleotides. Instead, the first 7 letters have been ignored and the remaining 4 letters have been mapped to the end of the intronic region between exons 21 and 22.
@@ -50,38 +43,64 @@ The sequencing process generated a truncated version of the mature mRNA starting
 
 This could be due to the aligner penalizing opening the intron gap just to align the leading 11 letters. This is only allowed because unfortunately the last 4 letters of exon 21 are identical to the last 4 letters in the intron, therefore providing to the aligner with the freedom to choose where to put these 4 bases
 
+
 # Part 2
 ## (a)
 
-
-```{r fig.height=3, echo=FALSE}
-sorted.index <- order(as.numeric(substring(df$V1,4)))
-df <- df [sorted.index,]
-# stat="idenity" to plot the values in V5 directly instead of a count/frequency
-ggplot(data = df[(df$V2 == 1 & df$V1 != "genome"),], aes(x = V1, y = V5)) + 
-  geom_bar(stat="identity", color="red")
+```{r, eval = F, echo = T, engine = "bash"}
+# Calculates the percent coverage of ERa chip-on-chip reads by chromosome
+bedtools genomecov -i ERa_hg18.bed -g hg18_chrom_sizes.txt > coverage.txt
+# Calculates number of interval overlaps between ERa and ERb
+# Reports multiple overlaps as a single occurrence
+bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
+bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
 ```
-**Figure 1.** **A** _Histogram showing the distribution of the exon counts. Even though most of the genes contain less than 60 exons, as many as 150 may be found in some of them._ **B** _Detail for genes with max. 20 exons. The mode can be visualized at 3-5 exons per gene (max found at 4). The number of exons per gene decreases steadily beyond it._
+
+
+```{r fig.height = 3, include = c(5, 6), echo = c(1, 5)}
+df <- read.table(file = "coverage.txt",
+                 col.names = c("chr", "bit", "start", "end", "fraction"))
+
+# sort by chromosome
+df$chr <- factor(df$chr %>% as.character, levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
+sorted.index <- order(as.numeric(substring(df$chr, 4)))
+df <- df[sorted.index,]
+head(df)
+
+# plot overlapping fraction of the chromosomes
+# stat="idenity" to plot the values in fraction directly instead of a count/frequency
+ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
+       mapping = aes(x = chr, y = fraction)) + 
+  geom_bar(stat = "identity", fill = "red")
+
+ggsave("fraction_barplot.png")
+```
+**Figure 1.** **A** _Barplot showing the distribution of the exon counts. Even though most of the genes contain less than 60 exons, as many as 150 may be found in some of them._ **B** _Detail for genes with max. 20 exons. The mode can be visualized at 3-5 exons per gene (max found at 4). The number of exons per gene decreases steadily beyond it._
 
 
 ```{r fig.height=3, fig.width=3, echo=FALSE}
 df2 <- read.table(file ="AtoBoverlap.bed")
 df3 <- read.table(file ="BtoAoverlap.bed")
-ERa <- read.table(file ="ERa_hg18.bed", skip=1)
-ERb <- read.table(file ="ERb_hg18.bed", skip=1)
+ERa <- read.table(file ="ERa_hg18.bed", skip = 1)
+ERb <- read.table(file ="ERb_hg18.bed", skip = 1)
 AtoBoverlap.count <- sum(df2$V4)
 BtoAoverlap.count <- sum(df3$V4)
 ERa.size <- length(ERa$V1)
 ERb.size <- length(ERb$V1)
 
-draw.pairwise.venn(ERa.size, ERb.size, 345, category = c("ERa", "ERb"), lty = rep("blank",2), fill = c("skyblue", "red"), alpha = rep(0.5, 2))
+draw.pairwise.venn(ERa.size, ERb.size, cross.area = 345,
+                   category = c("ERa", "ERb"),
+                   lty = rep("blank", 2),
+                   fill = c("skyblue", "red"),
+                   alpha = rep(0.5, 2))
 ```
 ## 8. Appendix
-## Command line entries
 
-bedtools genomecov -i ERa_hg18.bed -g genome.txt > coverage.txt
-bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
-bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
+```{r}
+sessionInfo()
+```
+
+
 
 ```{r code=readLines(knitr::purl("assignment2_group6.Rmd", documentation = 0)), eval = FALSE}
 ```
