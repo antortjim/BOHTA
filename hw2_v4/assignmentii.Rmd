@@ -43,7 +43,8 @@ First coding exon:ATGGT
 
 ## (c) How do you explain the discrepancy (maximum 5 lines)?
 
-The database contains DNA sequences derived from mRNA squences (cDNA). Both sequences are complementary to one another.
+The sequencing process generated a truncated version of the mature mRNA starting at one of the last exons of the DICER1 gene. This truncated molecule bears the last 11 nucleotides of exon 21/27 (GAAGCAAAAAG) and continues to hold the nucleotides in exon 22/27. Nevertheless, the aligner has mismapped these first nucleotides. Instead, the first 7 letters have been ignored and the remaining 4 letters have been mapped to the end of the intronic region between exons 21 and 22. This could be due to the aligner penalizing opening the intron gap just to align the leading 11 letters, and is only allowed because unfortunately the last 4 letters of exon 21 are identical to the last 4 letters in the intron, therefore providing the aligner the freedom to choose where to put these 4 bases.
+
 
 # Part 2
 ## (a)
