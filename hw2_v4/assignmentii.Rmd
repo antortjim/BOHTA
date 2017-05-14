@@ -31,15 +31,14 @@ df <- read.table(file="coverage.txt")
 
 # Part 1
 ## (a)What are the first five genomic nucleotides from the first exon of this transcript? 
-5’ UTR: TTTCC
-\newline 
-First coding exon: TACCA
+
+The DICER1 mRNA molecule should have the same sequence as the sense DNA genomic sequence (substituting Ts by Us). As AK002007 is transcribed from the reversed strand and the default genomic sequence presented by the browser is the antisense one, we have to reverse it. Therefore, the first five genomic nucleotides from the first exon of the AK002007 transcript are AAAGG.
+
 
 ## (b) Look at the raw mRNA sequence of AK002007, from the database it actually comes from. What are the first five nucleotides?
 
-5’ UTR: AAACC
-\newline 
-First coding exon:ATGGT
+When we check the raw mRNA sequence of AK002007, it can be seen that its first five nucleotides are GAAGC.
+
 
 ## (c) How do you explain the discrepancy (maximum 5 lines)?
 
