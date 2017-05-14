@@ -31,19 +31,24 @@ df <- read.table(file="coverage.txt")
 
 # Part 1
 ## (a)What are the first five genomic nucleotides from the first exon of this transcript? 
-5’ UTR: TTTCC
+AAAGG
 \newline 
-First coding exon: TACCA
+
+The DICER1 mRNA molecule should have the same sequence as the sense DNA genomic sequences (substituting Ts by Us). As AK002007 is transcribed on the reversed strand and the default genomic sequence presented by the browser is the antisense one, we have to reverse it. Therefore, the first five nucleotides of the exon in the AK002007 cDNA are AAAGG.
 
 ## (b) Look at the raw mRNA sequence of AK002007, from the database it actually comes from. What are the first five nucleotides?
 
-5’ UTR: AAACC
-\newline 
-First coding exon:ATGGT
+When we check the raw mRNA sequence of AK002007, it can be seen that the first five nucleotides are GAAGC.
 
 ## (c) How do you explain the discrepancy (maximum 5 lines)?
 
-The database contains DNA sequences derived from mRNA squences (cDNA). Both sequences are complementary to one another.
+**What is going on?**
+
+The sequencing process generated a truncated version of the mature mRNA starting at one of the last exons of the DICER1 gene. This truncated molecule bears the last 11 nucleotides of exon 21/27 ("gaagcaaaaag") and continues to hold the nucleotides in exon 22/27. Nevertheless, the aligner has mismapped these first nucleotides. Instead, the first 7 letters have been ignored and the remaining 4 letters have been mapped to the end of the intronic region between exons 21 and 22.
+
+**How could that happen?**
+
+This could be due to the aligner penalizing opening the intron gap just to align the leading 11 letters. This is only allowed because unfortunately the last 4 letters of exon 21 are identical to the last 4 letters in the intron, therefore providing to the aligner with the freedom to choose where to put these 4 bases
 
 # Part 2
 ## (a)
@@ -78,5 +83,5 @@ bedtools genomecov -i ERa_hg18.bed -g genome.txt > coverage.txt
 bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
 bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
 
-```{r code=readLines(knitr::purl("assignmentii.Rmd", documentation = 0)), eval = FALSE}
+```{r code=readLines(knitr::purl("assignment2_group6.Rmd", documentation = 0)), eval = FALSE}
 ```
