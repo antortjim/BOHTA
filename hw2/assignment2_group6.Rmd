@@ -57,7 +57,7 @@ bedtools genomecov -i merged.bed -g hg18_chrom_sizes.txt > coverage.txt
 ```
 
 R
-```{r fig.height = 3, include = T, echo = c(1,2,7), warning = F, messages = F}
+```{r fig.height = 3, include = 8, echo = 1:2, warning = F, messages = F}
 df <- read.table(file = "coverage.txt",
                 col.names = c("chr", "bit", "start", "end", "fraction"))
 
@@ -70,9 +70,10 @@ head(df)
 
 # plot overlapping fraction of the chromosomes
 # stat="idenity" to plot the values in fraction directly instead of a count/frequency
-ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
+p1 <- ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
        mapping = aes(x = chr, y = fraction)) + 
-  geom_bar(stat = "identity", fill = "green")
+  geom_bar(stat = "identity", fill = "orange") +
+  scale_y_continuous(limits = c(0, 6e-4))
 
 ggsave("fraction_barplot.png")
 ```
@@ -84,7 +85,7 @@ bedtools genomecov -i ERb_hg18.bed -g hg18_chrom_sizes.txt > ERb.txt
 ```
 
 
-```{r fig.height = 3, include = 8, echo = FALSE, warning = F, messages = F}
+```{r fig.height = 3, include = FALSE, echo = FALSE, warning = F, messages = F}
 df1 <- rbind(cbind(read.table(file = "ERa.txt"), protein = "ERa"),
              cbind(read.table(file = "ERb.txt"), protein = "ERb"))
 colnames(df1) <- c("chr", "bit", "start", "end", "fraction", "protein")
@@ -92,12 +93,20 @@ df1$chr <- factor(as.character(df1$chr),
                  levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
 sorted.index <- order(as.numeric(substring(df1$chr, 4)))
 df1 <- df1[sorted.index,]
-ggplot(data = df1[(df1$bit == 1 & df1$chr != "genome"),],
+p2 <- ggplot(data = df1[(df1$bit == 1 & df1$chr != "genome"),],
        mapping = aes(x = chr, y = fraction, fill = protein)) + 
-  geom_bar(stat = "identity", position = "dodge")
-
+  geom_bar(stat = "identity", position = "dodge") +
+  scale_y_continuous(limits = c(0, 6e-4)) +
+   theme(legend.title = element_blank(),
+         legend.position = c(0.75, 0.93),
+         legend.key.size = unit(0.5, "cm"),
+         legend.direction="horizontal")
 ```
 
+```{r include = T, echo = F}
+library("cowplot")
+plot_grid(p1, p2, rel_widths = c(1,1), nrow = 1, ncol = 2)
+```
 
 ## (b)
 
@@ -110,17 +119,12 @@ bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
 ```
 
 R
-```{r fig.height=3, fig.width=3, echo=FALSE, include = 9}
+```{r fig.height=3, fig.width=3, echo=FALSE, include = 4, message = F, warning = F}
 df2 <- read.table(file ="AtoBoverlap.bed")
 df3 <- read.table(file ="BtoAoverlap.bed")
-ERa <- read.table(file ="ERa_hg18.bed", skip = 1)
-ERb <- read.table(file ="ERb_hg18.bed", skip = 1)
-AtoBoverlap.count <- sum(df2$V4)
-BtoAoverlap.count <- sum(df3$V4)
-ERa.size <- length(ERa$V1)
-ERb.size <- length(ERb$V1)
-
-draw.pairwise.venn(ERa.size, ERb.size, cross.area = 345,
+overlap <- sum(df3$V4)
+draw.pairwise.venn(nrow(df2), nrow(df3),
+                   cross.area = overlap,
                    category = c("ERa", "ERb"),
                    lty = rep("blank", 2),
                    fill = c("skyblue", "red"),
