@@ -6,25 +6,26 @@ output: pdf_document
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(include = FALSE, echo = FALSE)
+knitr::opts_chunk$set(include = TRUE, echo = TRUE)
 ```
 
 
-```{r}
+```{r, message = F}
 library("ggplot2")
 library("cowplot")
 library("reshape2")
 library("dplyr")
+library("gridExtra")
 library("VennDiagram")
 theme_set(theme_bw())
 ```
 
 # Part 1
-## (a)What are the first five genomic nucleotides from the first exon of this transcript? 
+## (a) What are the first five genomic nucleotides from the first exon of this transcript? 
 AAAGG
 \newline 
 
-The DICER1 mRNA molecule should have the same sequence as the sense DNA genomic sequences (substituting Ts by Us). As AK002007 is transcribed on the reversed strand and the default genomic sequence presented by the browser is the antisense one, we have to reverse it. Therefore, the first five nucleotides of the exon in the AK002007 cDNA are AAAGG.
+The DICER1 mRNA molecule should have the same sequence as the DNA genomic sequences in the sense strand (substituting Ts by Us). As AK002007 is transcribed on the reverse strand and the default genomic sequence presented by the browser is the antisense one, we have to reverse it. Therefore, the first five nucleotides of the exon in the AK002007 cDNA are AAAGG.
 
 ## (b) Look at the raw mRNA sequence of AK002007, from the database it actually comes from. What are the first five nucleotides?
 
@@ -32,21 +33,20 @@ When we check the raw mRNA sequence of AK002007, it can be seen that the first f
 
 ## (c) How do you explain the discrepancy (maximum 5 lines)?
 
+AK002007 is possibly a truncated version of the DICER1 mRNA found in Genbank and refseq. The first 11 nt of  AK002007 are found in the last 11 nt of the previous exons in the other mrna sequences. The first 4 nt of these are postulated to be part of the 5' UTR of AK002007 by the aligner, confirming a misalignment. Otherwise, those 11 nt would be aligned as a separate exon in alignment with the other mrna sequences.
 
-### TODO Include capture from UCSCBrowser and Isabella's illustration showing the mess
+![](AK002007_1.png)
+**Figure 1**: Screenshot of the start of AK002007. The first 7 letters are discarded by the aligner, while the following 4 are aligned to the end of the intron.
 
-**What is going on?**
+![](AK002007_2.png)
+**Figure 2**: Screenshoot of the upstream exon. As we can see, the last letters of the exon match the letters aligned to the intron.
 
-The sequencing process generated a truncated version of the mature mRNA starting at one of the last exons of the DICER1 gene. This truncated molecule bears the last 11 nucleotides of exon 21/27 ("gaagcaaaaag") and continues to hold the nucleotides in exon 22/27. Nevertheless, the aligner has mismapped these first nucleotides. Instead, the first 7 letters have been ignored and the remaining 4 letters have been mapped to the end of the intronic region between exons 21 and 22.
 
-**How could that happen?**
-
-This could be due to the aligner penalizing opening the intron gap just to align the leading 11 letters. This is only allowed because unfortunately the last 4 letters of exon 21 are identical to the last 4 letters in the intron, therefore providing to the aligner with the freedom to choose where to put these 4 bases
-
-```{r, include=TRUE}
-knitr::include_graphics(path = c("AK002007_1.png", "AK002007_2.png"))
+```{r, include=TRUE, echo = F}
+knitr::include_graphics(path = c("focus.jpg"))
 ```
 
+**Figure 3**: Shows the mRNA sequence of AK002007 and the general DICER1. These mRNA sequences are read from the right to the left, because they are transcribed from the minus strand. Remarkably, the final 4 letters of the upstream exon and the intron are the exact same GAAA
 
 # Part 2
 ## (a)
@@ -58,64 +58,36 @@ bedtools sort -i full.bed > full.sorted.bed
 bedtools merge -i full.sorted.bed > merged.bed
 # Calculates the percent coverage by chromosome
 bedtools genomecov -i merged.bed -g hg18_chrom_sizes.txt > coverage.txt
-```
-
-R
-```{r fig.height = 3, include = 8, echo = 1:2, warning = F, messages = F}
-df <- read.table(file = "coverage.txt",
-                col.names = c("chr", "bit", "start", "end", "fraction"))
-
-# sort by chromosome
-df$chr <- factor(as.character(df$chr),
-                 levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
-sorted.index <- order(as.numeric(substring(df$chr, 4)))
-df <- df[sorted.index,]
-head(df)
-
-# plot overlapping fraction of the chromosomes
-# stat="idenity" to plot the values in fraction directly instead of a count/frequency
-p1 <- ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
-       mapping = aes(x = chr, y = fraction)) + 
-  geom_bar(stat = "identity", fill = "orange") +
-  scale_y_continuous(limits = c(0, 6e-4))
-
-ggsave("fraction_barplot.png")
-```
-**Figure 1.** **A** _Barplot showing the distribution of the exon counts. Even though most of the genes contain less than 60 exons, as many as 150 may be found in some of them._ **B** _Detail for genes with max. 20 exons. The mode can be visualized at 3-5 exons per gene (max found at 4). The number of exons per gene decreases steadily beyond it._
-
-```{r, include = T, eval = F, echo = T, engine = "bash"}
 bedtools genomecov -i ERa_hg18.bed -g hg18_chrom_sizes.txt > ERa.txt
 bedtools genomecov -i ERb_hg18.bed -g hg18_chrom_sizes.txt > ERb.txt
 ```
 
-
-```{r fig.height = 3, include = FALSE, echo = FALSE, warning = F, messages = F}
-df1 <- rbind(cbind(read.table(file = "ERa.txt"), protein = "ERa"),
-             cbind(read.table(file = "ERb.txt"), protein = "ERb"))
-colnames(df1) <- c("chr", "bit", "start", "end", "fraction", "protein")
-df1$chr <- factor(as.character(df1$chr),
+R
+```{r fig.height = 3, warning = F, messages = F}
+df <- rbind(cbind(read.table(file = "coverage.txt"), protein = "Merged"),
+            cbind(read.table(file = "ERa.txt"), protein = "ERa"),
+            cbind(read.table(file = "ERb.txt"), protein = "ERb"))
+colnames(df) <- c("chr", "bit", "start", "end", "fraction", "protein")
+df$chr <- factor(as.character(df$chr),
                  levels = c(paste("chr", c(as.character(1:22), "X", "Y", "M"), sep = ""), "genome"))
-sorted.index <- order(as.numeric(substring(df1$chr, 4)))
-df1 <- df1[sorted.index,]
-p2 <- ggplot(data = df1[(df1$bit == 1 & df1$chr != "genome"),],
+sorted.index <- order(as.numeric(substring(df$chr, 4)))
+df <- df[sorted.index,]
+ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
        mapping = aes(x = chr, y = fraction, fill = protein)) + 
   geom_bar(stat = "identity", position = "dodge") +
   scale_y_continuous(limits = c(0, 6e-4)) +
    theme(legend.title = element_blank(),
-         legend.position = c(0.75, 0.93),
+         legend.position = c(0.75, 0.87),
          legend.key.size = unit(0.5, "cm"),
          legend.direction="horizontal")
 ```
 
-```{r include = T, echo = F}
-library("cowplot")
-plot_grid(p1, p2, rel_widths = c(1,1), nrow = 1, ncol = 2)
-```
+**Figure 4.** _holi_
 
 ## (b)
 
 Bedtools commands to preprocess data before R
-```{r, include = T, eval = F, echo = T, engine = "bash"}
+```{r, eval = F, engine = "bash"}
 # Calculates number of interval overlaps between ERa and ERb
 # Reports multiple overlaps as a single occurrence
 bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
@@ -137,9 +109,4 @@ draw.pairwise.venn(nrow(df2), nrow(df3),
 
 ```{r, include = T}
 sessionInfo()
-```
-
-
-
-```{r code=readLines(knitr::purl("assignment2_group6.Rmd", documentation = 0)), eval = FALSE}
 ```
