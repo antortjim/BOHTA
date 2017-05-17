@@ -6,7 +6,7 @@ output: pdf_document
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(include = FALSE, echo = FALSE, fig.height = 4)
+knitr::opts_chunk$set(include = FALSE, echo = FALSE)
 ```
 
 
@@ -42,6 +42,10 @@ The sequencing process generated a truncated version of the mature mRNA starting
 **How could that happen?**
 
 This could be due to the aligner penalizing opening the intron gap just to align the leading 11 letters. This is only allowed because unfortunately the last 4 letters of exon 21 are identical to the last 4 letters in the intron, therefore providing to the aligner with the freedom to choose where to put these 4 bases
+
+```{r, include=TRUE}
+knitr::include_graphics(path = c("AK002007_1.png", "AK002007_2.png"))
+```
 
 
 # Part 2
@@ -118,8 +122,7 @@ bedtools intersect -a ERa_hg18.bed -b ERb_hg18.bed -c > AtoBoverlap.bed
 bedtools intersect -a ERb_hg18.bed -b ERa_hg18.bed -c > BtoAoverlap.bed
 ```
 
-R
-```{r fig.height=3, fig.width=3, echo=FALSE, include = 4, message = F, warning = F}
+```{r fig.height=3, fig.width=3, echo=FALSE, include = 4, message = F, warning = F, fig.align="center"}
 df2 <- read.table(file ="AtoBoverlap.bed")
 df3 <- read.table(file ="BtoAoverlap.bed")
 overlap <- sum(df3$V4)
