@@ -185,7 +185,7 @@ ggsave("exercise3.png")
 
 **Figure 2. Distribution of intron and exons lengths in linear (A) and log10 (B) scale**. _As can be seen in the histograms (top) and the boxplots (bottom), the median of the introns is one order of magnitude bigger than the median of the exons._
 
-The histograms and box-plots in Figure 3.B are presented with a logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. They show that while most of exons (red) tend to have shorter lengths -with a peak around 2 kB-, the introns (blue) have a more right-tailed distribution, with generally longer lengths, covering an extremly wide span.
+The histograms and box-plots in Figure 2.B are presented with a logarithmic scale in x-axis in order to clearly appreciate the differences between the two subsets. They show that while most of exons (red) tend to have shorter lengths -with a peak around 2 kB-, the introns (blue) have a more right-tailed distribution, with generally longer lengths, covering an extremly wide span.
 
 
 ## Question 4
@@ -202,7 +202,8 @@ exon.length <- sort(lengths.only$exon.length)
 new_set <- data.frame(normal.quantiles, exon.length)
 slope <- diff(normal.quantiles) / diff(exon.length) 
 
-Exon.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = exon.length / 1e3)) + 
+Exon.qqplot <- ggplot(data = new_set,
+                      mapping = aes(x = normal.quantiles, y = exon.length / 1e3)) + 
   geom_point() + labs(size = "Nitrogen",
                       x = "Normal Quantiles",
                       y = "Exon Lengths (Kb)",
@@ -216,7 +217,8 @@ intron.length <- sort(lengths.only$intron.length)
 new_set <- data.frame(normal.quantiles, intron.length)
 slope <- diff(normal.quantiles) / diff(intron.length) 
 
-Intron.qqplot <- ggplot(data = new_set, mapping = aes(x = normal.quantiles, y = intron.length / 1e6)) + 
+Intron.qqplot <- ggplot(data = new_set,
+                        mapping = aes(x = normal.quantiles,y = intron.length / 1e6)) + 
   geom_point() + labs(size = "Nitrogen",
                       x = "Normal Quantiles",
                       y = "Intron Lengths (Mb)",
