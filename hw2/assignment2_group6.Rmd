@@ -132,7 +132,7 @@ As shown in Figure 5, there are 236 ERa ChIP intervals that do not overlap with 
 
 **How can this be?**
 
-The fly mRNA sequence, which aligns to the mouse genome at chr9:24,851,809-24,851,889 (defined as "input region") looks different from the mRNA sequence that we get when we BLAT this to the fly genome because the gene in the fly genome includes the full fly's _rpl41_exome as well as introns (as seen in figures UCSC1 and UCSC2)
+The fly mRNA sequence, which aligns to the mouse genome at chr9:24,851,809-24,851,889 (defined as "input region") looks different from the mRNA sequence that we get when we BLAT this to the fly genome because the gene in the fly genome includes the full fly's _rpl41_ exome as well as introns (as seen in figure 6)
 
 
 ![](UCSC1.png)
@@ -140,7 +140,7 @@ The fly mRNA sequence, which aligns to the mouse genome at chr9:24,851,809-24,85
 
 **Figure 6.** _Captures of UCSC browser of the mouse genome (upper) and fly genome (bottom). Upper figure shows the chr9:24,851,809-24,851,889 region in the mouse genome. Bottom figure shows the conserved fly mRNA sequence BLATed to the fly genome. This sequence corresponds to the rpl41 gene, encoding a ribosomal protein. The capture in the mouse genome shows that a 78 bp region in the fly genome aligns to the mouse genome at chr9. This corresponds to a subset of exons 2 and 3 in the fly rpl41 gene _
 
-Is the mouse gene likely to be real?
+**Is the mouse gene likely to be real?**
  
 We do not find it likely that the mouse input region is a real gene, based on the following three arguments:
  
