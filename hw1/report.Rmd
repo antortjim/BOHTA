@@ -190,8 +190,7 @@ The histograms and box-plots in Figure 2.B are presented with a logarithmic scal
 
 ## Question 4
 
-We need to test the difference of the means of both distributions. The Student's T test may be used if a normal distribution can be assumed. Otherwise, only the corresponding non parametric test ought to be used (Wilcoxon test).
-In order to test normality, a Q-Q plot between the observed lengths and the normal distribution was drawn.
+We need to test the difference of the means of both distributions. The Welch two sample t-test may be used if a normal distribution can be assumed. If the assumption of normality is doubtful, the Wilcoxon test (non-parametric) should be used. For this reason, the first step is to test the normality of our distributions. Although it can be checked by eye at the histograms in Figure 3 that both the lengths of introns and exons do not follow a normal distribution, a more detailed Q-Q plot between the observed lengths and the theoretical normal distribution has been constructed.
 
 ```{r, fig.height=2}
 lengths.only <- data.frame(exon.length = df$mrna_length, intron.length = df$intron_length)
@@ -227,16 +226,19 @@ Intron.qqplot <- ggplot(data = new_set,
 
 plot_grid(Exon.qqplot, Intron.qqplot)
 ```
-**Figure 3** _QQplots of exon and intron length against normal distribution_. _Each point in the two plots above carries an observed component of intron or exon length (x-axis), and an expected component drawn from a normal distribution (y-axis) with a mean and standard deviation equal to the that of the intron or exon length sets. Both plots show significant deviations from the abline which maps evenly increasing values of a normal distribution, to itself._
+**Figure 3** _Q-Q plots of exon and intron lengths against their corresponding theoretical normal distributions. Both plots show 
+deviations from the abline, which represents great differences between the theoretical normal distributions and the distributions
+that both the lengths of introns and exons are actually following._
 
 As we are comparing two data subsets that are not following a normal distribution (as seen in Figure 4), we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
-Our null hypothesis is that there is no significant difference in the U-statistic between the length of the exons and introns of the data set. 
+
+Our null hypothesis is that there is no difference in the U-statistic of the exons and introns lengths. In contrast, our alternative hypothesis is that there is no difference in the U-statistic of the exons and introns lengths.
 
 ```{r}
 wilcox.test(df$mrna_length, df$intron_length, alternative = "two.sided")
 ```
 
-As our p-value is < 2.2e-16, it is below the significance threshold of 0.05, we can reject the null hypothesis and accept the alternative hypothesis, that is, there is a significant difference in the U-statistic between the length of the exons and introns. In addition to the previous observations of the lengths of introns and exons, we can conclude that the introns are significantly longer than the exons of the data set.
+The Wilcoxon test returned a p-value of < 2.2e-16. As it is below the significance threshold of 0.05, we can reject the null hypothesis and accept the alternative hypothesis. This significant difference between the U-statistic of the exons and introns lengths leads us to conclude that introns lengths are significantly longer than exon lengths. 
 
 ## Question 5
 
