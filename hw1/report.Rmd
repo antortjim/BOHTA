@@ -1,9 +1,13 @@
 ---
 title: "Assignment 1"
-group: "BOHTA group 6"
-author: "Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas Vincent"
+author: Adham Khaled, Juan Manuel Medina, Antonio Ortega, Isabella Skandorff & Andreas
+  Vincent
 date: "May 8, 2017"
-output: pdf_document
+output:
+  html_document:
+    toc: true
+  pdf_document: default
+group: BOHTA group 6
 ---
 
 
@@ -97,7 +101,7 @@ Basically, the total length of introns for each gene is obtained by substracting
 
 On the histograms, the number of bins should be exactly the same, and the x-axis should have the same scale. Comment the plot – are exons larger than introns or vice versa?
 
-```{r, include = F, echo = F}
+```{r, include = T, echo = T}
 df2 <- subset(x = melt(data.frame(mrna_length = df$mrna_length,
                                   intron_length = df$intron_length)),
             subset = value != 0)
