@@ -194,7 +194,7 @@ The histograms and box-plots in Figure 2.B are presented with a logarithmic scal
 
 As we are comparing two data subsets that are not following a normal distribution we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
 
-Our null hypothesis is that there is no difference in the U-statistic of the exons and introns lengths. In contrast, our alternative hypothesis is that there is no difference in the U-statistic of the exons and introns lengths.
+Our null hypothesis is that there is no difference in the U-statistic of the exons and introns lengths. In contrast, our alternative hypothesis is that there is difference in the U-statistic of the exons and introns lengths, meaning that the length distributions are significantly different.
 
 
 $$H_0 : \text{Intron length distribution} = \text{Exon length distribution}$$
