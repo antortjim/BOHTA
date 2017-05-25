@@ -84,14 +84,8 @@ ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
 
 **Figure 4.** _Barplot of the coverage across the genome for ERa, Erb and the intervals resulting for a total merge of both._
 
-
-We also considered running a Wilcoxon test on the distribution of the fractions to determine whether there is a significant differences between the coverages of ERa and ERb, given an apparent decline in coverage in ERb in relation to ERa, but there was not (p > 0.05).
-```{r}
-wilcox.test(df[df$bit == 1 & df$chr != "genome" & df$protein== "ERa", 5], df[df$bit == 1 & df$chr != "genome" & df$protein== "ERb",5])
-```
-
 As shown in the plot, the ERa and ERb ChIP sites are overlapping in the same chromosomes, these being 1, 3, 6, 21, 22, and X. In addition, after merging both interval sets, the binding fraction is more or less the same for both receptors (Figure 4). A biological explanation for observing that many overlapping ChIP sites for ERa and ERb could be that these receptors not only form homodimers, but also heterodimers with each other (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3389841/). Another possible explanation could be that ERa and ERb have similar or even contradicting actions on some of the same genes. A more basic explanation for getting such high overlap could be that in the laboratory process, the antibody used for detecting ERa and ERb in the ChIP analysis was not specific for either of them.
-Notably, ERa and ERb only bind to 6 out of 22 chromosomes. It seems highly unlikely that these receptors only bind in these 6 chromosomes, so this data set may had been filtered down to these 6 chromosome, or we may be only seeing these truncated results due to a technicality of the tilling assay.
+Notably, ERa and ERb only bind to 6 out of 22 chromosomes. It seems highly unlikely that these receptors only bind in these 6 chromosomes, so this data set may had been filtered down to these 6 chromosome, or we may be only seeing these truncated results due to a technicality of the tilling assay; the assay might be targeting half the chromosomes only.
 
 ```{r, eval = F, echo = F, include = F}
 chr_size <- read.table(file = "hg18_chrom_sizes.txt", col.names = c("chr", "length"))
