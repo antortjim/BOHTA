@@ -91,14 +91,16 @@ genes_FDR_lower_0.2
 It is interesting to point out that the 12 genes with a significative fold change are all upregulated  in the HIV patients, where the gene with the sharpest displaying a 50% increase. ($log_2(FC) = 0.6$).
 
 
+\newpage
+
 # Part 2
 
  
 ####  2.2  #### 
 
 ```{r, echo = F, include = F}
-line_count <- matrix(c(824.551, 824.538, 824.558,824.558,
-                       824.611, 824.538, 824.573, 824.545),
+line_count <- matrix(c(824551, 824538, 824558, 824558,
+                       824611, 824538, 824573, 824545),
                      byrow = T, nrow = 4,
                      dimnames = list(c(1:3, "mean"), c("KD", "WT")))
 
@@ -106,7 +108,7 @@ line_count <- matrix(c(824.551, 824.538, 824.558,824.558,
 
 
 ```{r table_1, eval = T, echo = F, include = T}
-knitr::kable(line_count, digits=2, align = "c")
+knitr::kable(line_count, digits=2, align = "c", caption = "Average number of lines in the 3 assembled transcripts for both condtions. Mean in the bottom row.")
 ```
 
 
@@ -307,16 +309,10 @@ The CPTP domain consists of a double layer of alpha helices generating a hydroph
 
 Since TCONS_0000021 expression decreases one order of magnitude when transitioning to condition 2, this analysis provides evidence for an inhibition of the expression of its truncated protein in condition 2. This is quite interesting since TCONS_0000022 does not change its expression that much. This means that TCONS_0000021 regulation's does not act at the promoter level but at another downstream process. Even if TCONS_0000022 expression does not change that much, this could either mean that the full protein remains produced in a similar amount, or that there other inhibitory mechanisms acting postranscriptionally.
 
-```{r table_2, eval = F, echo = F, include = F}
+```{r table_2, eval = T, echo = F, include = T}
 out <- cbind(filter(gen_tr_pot, gene == "uc001aeo.3") %>% select(transcript_id, value_1.TRANSCRIPT, value_2.TRANSCRIPT), "Pocket" = c("No", "Yes"))
-knitr::kable(out, digits=2, col.names = c("Transcript", "Expression condition 1", "Expression condition 2", "Pocket"))
+knitr::kable(out, digits=2, col.names = c("Transcript", "Expression condition 1", "Expression condition 2", "Pocket"), align = "c", caption = "Summary of the collected data. TCONS_0000021 decreases its expression 10 fold in condition 2 and interestingly lacks a proper hydrophobic pocket.")
 ```
-
-   Transcript   | Expression 1  | Expression 2  |  Pocket
---------------- | ------------- | ------------- | ---------
- TCONS_0000021  |   3299.4300   |   345.5850    |    No
- TCONS_0000022  |   4623.5900   |   4335.4500   |    Yes
-                                 Table 1: Summary table            
 
 
 In conclusion, this analysis on has revealed that the GLTPD1 gene, producing to isoforms experiences an isoform switch. TCONS_0000021 expression decreases by almost 90%, while TCONS_0000022 remains similar. The structural difference of the proteins encoded by two isoforms, where the first isoforms codes for a protein with a truncated domain, provides an interesting insight in to the biology of lipid transfer across membranes and the function of the GLTPD1 gene.
