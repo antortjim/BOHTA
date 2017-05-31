@@ -194,7 +194,7 @@ The histograms and box-plots in Figure 2.B are presented with a logarithmic scal
 
 As we are comparing two data subsets that are not following a normal distribution we have chosen to perform a Wilcoxon test to investigate if there is a significant difference in the lengths of the introns and exons of the genes of our data set.
 
-Our null hypothesis is that there is no difference in the U-statistic of the exons and introns lengths. In contrast, our alternative hypothesis is that there is difference in the U-statistic of the exons and introns lengths, meaning that the length distributions are significantly different.
+Our null hypothesis is that there is no difference in the U-statistic of the exons and introns lengths. In contrast, our alternative hypothesis is that there is difference in the U-statistic of the exons and introns lengths.
 
 
 $$H_0 : \text{Intron length distribution} = \text{Exon length distribution}$$
@@ -218,12 +218,14 @@ r2 <- round(cor(df$mrna_length, df$exon_count, method = "pearson"), digits = 2)
 
 par(mfrow = c(1,2))
 model_1 <- lm(df$intron_length / 1e6 ~ df$mrna_length)
-plot(df$mrna_length, df$intron_length / 1e6, pch = 19, xlab = "mRNA length", ylab = "Introns Length (Mb)")
+plot(df$mrna_length, df$intron_length / 1e6, pch = 19,
+     xlab = "mRNA length", ylab = "Introns Length (Mb)")
 abline(model_1, col = "blue")
 text(x = 30000, y = 1.5, labels = paste("r2 = ", r1, sep = ""))
 
 model_2 <- lm(df$exon_count ~ df$mrna_length)
-plot(df$mrna_length, df$exon_count, pch = 19, xlab = "mRNA length", ylab = "Exon count")
+plot(df$mrna_length, df$exon_count, pch = 19,
+     xlab = "mRNA length", ylab = "Exon count")
 abline(model_2, col = "blue")
 text(x = 30000, y = 150, labels = paste("r2 = ", r2, sep = ""))
 ```
@@ -245,7 +247,7 @@ As can be seen above, the gene that has the longest total exon length is MUC16, 
 ```{r}
 count_genes <- function( df, x1 = 0, x2 = max(df$mrna_length))
 {
- total.mrna <- length(df$name)
+ total.mrna <- nrow(df)
  mrna.interval <- sum(df$mrna_length >= x1 & df$mrna_length <= x2)
  mrna.fraction = mrna.interval / total.mrna
  return ( mrna.fraction * 100)

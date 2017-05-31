@@ -35,9 +35,9 @@ When we check the raw mRNA sequence of AK002007, it can be seen that the first f
 
 AK002007 is possibly a truncated version of the DICER1 mRNA found in Genbank and refseq. The first 11 nts of AK002007 are found in the last 11 nt of the previous exons in the other mRNA sequences. The first 4 nts of these are predicted to be part of the 5' UTR of AK002007 by the aligner, confirming a misalignment. Otherwise, those 11 nt would be aligned as a separate exon in alignment with the other mRNA sequences.
 
-![_Screenshot of the start of AK002007. The first 7 letters are discarded by the aligner, while the following 4 are aligned to the end of the intron._](AK002007_1.png)
+![_Screenshot of the start of AK002007. The first 7 letters are discarded by the aligner, while the following 4 are aligned to the end of the intron._ \label{fig:ucsc1}](AK002007_1.png)
 
-![_Screenshoot of the upstream exon. As we can see, the last letters of the exon match the letters aligned to the intron._](AK002007_2.png)
+![_Screenshoot of the upstream exon. As we can see, the last letters of the exon match the letters aligned to the intron._\label{fig:ucsc2}](AK002007_2.png)
 
 
 
@@ -45,7 +45,9 @@ AK002007 is possibly a truncated version of the DICER1 mRNA found in Genbank and
 knitr::include_graphics(path = c("focus.jpg"))
 ```
 
-![_Shows the mRNA sequence of AK002007 and the general DICER1. These mRNA sequences are read from the right to the left, because they are transcribed from the minus strand. Remarkably, the final 4 letters of the upstream exon and the intron are the exact same GAAA. The 11 nucleotides that match between the upstream exon and the raw mRNA sequence of AK002007 are written in pruple._](focus.jpg)
+![_Shows the mRNA sequence of AK002007 and the general DICER1. These mRNA sequences are read from the right to the left, because they are transcribed from the minus strand. Remarkably, the final 4 letters of the upstream exon and the intron are the exact same GAAA. The 11 nucleotides that match between the upstream exon and the raw mRNA sequence of AK002007 are written in pruple._\label{fig:focus}](focus.jpg)
+
+\newpage
 
 # Part 2
 ## (a)
@@ -62,7 +64,7 @@ bedtools genomecov -i ERb_hg18.bed -g hg18_chrom_sizes.txt > ERb.txt
 ```
 
 R
-```{r fig.height = 3, warning = F, messages = F, include = T}
+```{r  warning = F, messages = F, include = T}
 df <- rbind(cbind(read.table(file = "coverage.txt"), protein = "Merged"),
             cbind(read.table(file = "ERa.txt"), protein = "ERa"),
             cbind(read.table(file = "ERb.txt"), protein = "ERb"))
@@ -82,16 +84,20 @@ p <- ggplot(data = df[(df$bit == 1 & df$chr != "genome"),],
 ggsave("merged_barplot.png", p)
 ```
 
-![_Barplot of the coverage across the genome for ERa, Erb and the intervals resulting for a total merge of both._](merged_barplot.png)
+![_Barplot of the coverage across the genome for ERa, Erb and the intervals resulting for a total merge of both._\label{fig:barplot}](merged_barplot.png){ width=70% }
 
 
 We also considered running a Wilcoxon test on the distribution of the fractions to determine whether there is a significant differences between the coverages of ERa and ERb, given an apparent decline in coverage in ERb in relation to ERa, but there was not (p > 0.05).
 ```{r}
-wilcox.test(df[df$bit == 1 & df$chr != "genome" & df$protein== "ERa", 5], df[df$bit == 1 & df$chr != "genome" & df$protein== "ERb",5])
+wilcox.test(df[df$bit == 1 & df$chr != "genome" & df$protein== "ERa", 5],
+            df[df$bit == 1 & df$chr != "genome" & df$protein== "ERb",5])
 ```
 
-As shown in the plot, the ERa and ERb ChIP sites are overlapping in the same chromosomes, these being 1, 3, 6, 21, 22, and X. In addition, after merging both interval sets, the binding fraction is more or less the same for both receptors (Figure 4). A biological explanation for observing that many overlapping ChIP sites for ERa and ERb could be that these receptors not only form homodimers, but also heterodimers with each other (https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3389841/). Another possible explanation could be that ERa and ERb have similar or even contradicting actions on some of the same genes. A more basic explanation for getting such high overlap could be that in the laboratory process, the antibody used for detecting ERa and ERb in the ChIP analysis was not specific for either of them.
-Notably, ERa and ERb only bind to 6 out of 22 chromosomes. It seems highly unlikely that these receptors only bind in these 6 chromosomes, so this data set may had been filtered down to these 6 chromosome, or we may be only seeing these truncated results due to a technicality of the tilling assay.
+As shown in the plot, the ERa and ERb ChIP sites are overlapping in the same chromosomes, these being 1,
+3, 6, 21, 22, and X. In addition, after merging both interval sets, the binding fraction is more or less the same for both receptors (Figure \ref{fig:barplot}). 
+A biological explanation for observing that many overlapping ChIP sites for ERa and ERb could be that these receptors not only form homodimers, but also heterodimers with each other (Lee _et al_). Another possible explanation could be that ERa and ERb have similar or even contradicting actions on some of the same genes. 
+A more basic explanation for getting such high overlap could be that in the laboratory process, the antibody used for detecting ERa and ERb in the ChIP analysis was not specific enough for either of them. 
+Another thing worth noticing is that the result of the tilling array only shows binding of ERa and ERb to 6 of the chromosomes. Tilling array is an older and more expensive microarray method, so it is very likely that the researchers chose to only probe for these 6 chromosomes. If the other chromosomes were probed for in the assay, we would at least expect to observe some noise from these in the dataset.
 
 ```{r, eval = F, echo = F, include = F}
 chr_size <- read.table(file = "hg18_chrom_sizes.txt", col.names = c("chr", "length"))
@@ -123,7 +129,8 @@ draw.pairwise.venn(nrow(df2), nrow(df3),
                    category = c("ERa", "ERb"),
                    lty = rep("blank", 2),
                    fill = c("skyblue", "red"),
-                   alpha = rep(0.5, 2))
+                   alpha = rep(0.5, 2),
+                   cex = rep(2.5, 3), cat.cex = rep(3, 2))
 dev.off()
 ```
 ```{r figs, echo=FALSE, fig.width=3,fig.height=3, fig.cap="\\label{fig:venn}_Venn diagram of the ERa and Erb interval sets, showing in the cross area how many of them overlap at least one base._"}
@@ -139,10 +146,10 @@ As shown in Figure \ref{fig:venn}, there are 236 ERa ChIP intervals that do not 
 
 **How can this be?**
 
-The fly mRNA sequence, which aligns to the mouse genome at chr9:24,851,809-24,851,889 (defined as "input region") looks different from the mRNA sequence that we get when we BLAT this to the fly genome because the gene in the fly genome includes the full fly's _rpl41_ exome as well as introns (as seen in figure 6)
+The fly mRNA sequence, which aligns to the mouse genome at chr9:24,851,809-24,851,889 (defined as "input region") looks different from the mRNA sequence that we get when we BLAT this to the fly genome because the gene in the fly genome includes the full fly's _rpl41_ exome as well as introns (as seen in figure \ref{fig:ucsc3})
 
 
-![_Captures of UCSC browser of the mouse genome (upper) and fly genome (bottom). Upper figure shows the chr9:24,851,809-24,851,889 region in the mouse genome. Bottom figure shows the conserved fly mRNA sequence BLATed to the fly genome. This sequence corresponds to the rpl41 gene, encoding a ribosomal protein. The capture in the mouse genome shows that a 78 bp region in the fly genome aligns to the mouse genome at chr9. This corresponds to a subset of exons 2 and 3 in the fly rpl41 gene_](UCSC.png)
+![_Captures of UCSC browser of the mouse genome (upper) and fly genome (bottom). Upper figure shows the chr9:24,851,809-24,851,889 region in the mouse genome. Bottom figure shows the conserved fly mRNA sequence BLATed to the fly genome. This sequence corresponds to the rpl41 gene, encoding a ribosomal protein. The capture in the mouse genome shows that a 78 bp region in the fly genome aligns to the mouse genome at chr9. This corresponds to a subset of exons 2 and 3 in the fly rpl41 gene_\label{fig:ucsc3}](UCSC.png)
 
 
 **Is the mouse gene likely to be real?**
@@ -153,6 +160,10 @@ We do not find it likely that the mouse input region is a real gene, based on th
 
 * Secondly, if we compare the input region/conservation track to the functional Rpl41 gene in mouse (chr10:127,951,059-127 ,952,117), it can be seen that the functional gene includes introns and the input region/conservation track does not. Most eukaryotic genes include introns, so this indicates that the input region is not a real functional gene.  
 
-* Thirdly, we looked at the fly mRNA sequence in the conservation track from the input region and saw that there are 5 other exact copies of it in the mouse genome. These are 81.5 % identical to the NM_001014551 gene in the fly. We doubt that it is likely for a gene to have 5 identical and functional copies in a genome. Furthermore, our input region appears to be the complete last exon of the official rlp41 gene and part of the intronic region as well (figure 6). It is more likely that these are remnants of an original gene that was once retrotransposed and then duplicated several times, generating several copies of varying degrees of conservation, probably correlated with the time passed since their duplication events. 
+* Thirdly, we looked at the fly mRNA sequence in the conservation track from the input region and saw that there are 5 other exact copies of it in the mouse genome. These are 81.5 % identical to the NM_001014551 gene in the fly. We doubt that it is likely for a gene to have 5 identical and functional copies in a genome. Furthermore, our input region appears to be the complete last exon of the official rlp41 gene and part of the intronic region as well (figure \ref{fig:ucsc3}). It is more likely that these are remnants of an original gene that was once retrotransposed and then duplicated several times, generating several copies of varying degrees of conservation, probably correlated with the time passed since their duplication events. 
 
 Therefore, we conclude that the mouse input region is not likely to represent a real gene, but instead just a processed pseudogene. 
+
+**References**
+
+Lee, H.-R., Kim, T.-H., & Choi, K.-C. (2012). Functions and physiological roles of two types of estrogen receptors, ER$\alpha$ and ER$\beta$, identified by estrogen receptor knockout mouse. Laboratory Animal Research, 28(2), 71. http://doi.org/10.5625/lar.2012.28.2.71
