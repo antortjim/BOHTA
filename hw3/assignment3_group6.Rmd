@@ -22,10 +22,18 @@ theme_set(theme_bw())
 
 # Part 1
 ## (1)
-Just because IRX3 shows a higher signal than RXR in both microarray experiments, it does not necessarily mean that it is more expressed, as this signal can also be influenced by two main sources of variations unrelated to the gene expression: a global variation (a differential RNA quality of both genes, a different sample preparation process, etc) and a gene-specific variation (a differential tendency of both genes of dying, their potential inherent biological variations, etc). Both variations can be reduced by taking replicates, and the systematic variation can be specifically tackled by performing a systematic analysis of normalized data.
-\newline 
+Just because IRX3 shows a higher signal than RXR in both microarray experiments, it does not necessarily mean that it is more expressed, as this signal can also be influenced by two main sources of variations unrelated to the gene expression: a global variation (a differential RNA quality of both genes, a different sample preparation process, etc) and a gene-specific variation (a differential tendency of both genes for dyeing, their potential inherent biological variations, etc). Both variations can be reduced by taking replicates, and the systematic variation can be specifically tackled by performing a systematic analysis of normalized data.
+
+## I don't understand what you mean with "a differential tendency of both genes of dying"?
 
 ## (2) 
+
+* $H_0$: Mean of expression values across the AIDS and the control patients is similar.
+               $\mu_{control}$ = $\mu_{AIDS}$
+* $H_1$: Mean of expression values across the AIDS and the control patients is different.
+               $\mu_{control}$ $\neq$ $\mu_{AIDS}$
+               
+We need to test the difference of means for two distributions of expression values for every gene in the dataset. As there is no evidence showing the values don't follow a normal distribution, we don't reject it and thus assume that the mean of each sample is student's-t distributed. Therefore we decided to use the student's t test.
 
 ```{r, message = F}
 df <- read.table("data_for_part_1/normalized_data.txt", h = F)
@@ -41,10 +49,9 @@ Genes with a p-value less than 0.05:
 diff_genes <- sum(pvals < 0.05)
 diff_genes
 ```
-
-Expected FP = threshold% used in the t.test -> 0.05% of the t. tests that reject the H0 are wrong:
+False positives = 5% of all tests
 ```{r}
-round(0.05 * diff_genes, 0)
+round(0.05 * length(pvals), 0)
 ```
 The expected number of false positives is 5% of the set of significant results which is 96, or 5% of the 1911 significant differentially expresses genes (p-value < 0.05).
 
@@ -104,8 +111,7 @@ It is interesting to point out that the 12 genes with a significative fold chang
 ####  2.2  #### 
 
 ```{r, echo = F, include = F}
-line_count <- matrix(c(824551, 824538, 824558, 824558,
-                       824611, 824538, 824573, 824545),
+line_count <- matrix(c(1004, 991, 1011, 1011, 1064, 991, 1026, 998),
                      byrow = T, nrow = 4,
                      dimnames = list(c(1:3, "mean"), c("KD", "WT")))
 
@@ -120,11 +126,11 @@ knitr::kable(line_count, digits=2, align = "c", caption = "Average number of lin
 ####  2.3  #### 
 
 
-Lines of the combined GTF file (combined transcriptome): 1082433
+Lines of the combined GTF file (combined transcriptome): 1207
 
-The similarity between the number of lines in the individual and the combined transcriptomes suggests that most of the exons and RNA isoforms present in  the one for HOXA1 KD cells. Therefore it makes sense to perform a differential expression analysis on the combined transcriptome.
+The number of lines in the GTF files not only reflects the transcripts but also the exons. Therefore the raw count with wc -l does not really show the size of the transcriptome sets, and a refined version should be used. We can definitely say that not all variants are available in all the local transcriptomes.
 
-![Capture of the chr1:1,000,000-1,500,00 region displaying the regions in the genome where transcripts were assembled by cufflinks (cuffmerge output). The guide transcriptome is displayed in the Albin track \ref{fig:bigbed}. Cuffmerge output was submitted as a bigbed file obtained from applying gtf2bed to the cuffmerge output and subsequently compressing it with the bedToBigBed utility.](bigbed.png)
+![Capture of the chr1:1,000,000-1,500,00 region displaying the regions in the genome where transcripts were assembled by cufflinks (cuffmerge output). The combined or "global" transcriptome is displayed in the top track. \ref{fig:ucsc}](ucsc.png)
 
 ####  2.4  #### 
 
@@ -167,19 +173,17 @@ nrow(gene_expressed)
 nrow(transcript_expressed)
 
 # dplyr incorporation
-gene_expressed %>% filter(significant == "yes") %>% nrow                        # 12
-nrow(transcript_expressed[which(transcript_expressed$significant == "yes"), ])  # 11
+gene_expressed %>% filter(significant == "yes") %>% nrow
+nrow(transcript_expressed[which(transcript_expressed$significant == "yes"), ])
 ```
-
-
 
 ####  3.4  #### 
 
 ```{r}
 # Make two reduced dataframes from gene_expressed and transcript_expressed and merge them based on the
 # gene ids
-gene_reduced <- gene_expressed[, c(2, 3, 8, 9)]                     
-transcript_reduced <- transcript_expressed[, c(1, 2, 8, 9)]
+gene_reduced <- select(gene_expressed, gene_id, gene, value_1, value_2)                     
+transcript_reduced <- select(transcript_expressed, transcript_id, gene_id, value_1, value_2)
 
 gen_tr <- merge(gene_reduced, transcript_reduced, by = "gene_id", 
                               suffixes = c(".GENE", ".TRANSCRIPT"))
@@ -202,20 +206,14 @@ gen_tr$IF2 <- gen_tr$value_2.TRANSCRIPT /
 gen_tr$dIF <- gen_tr$IF2 - gen_tr$IF1
 
 # Overwrite the IF1 and IF2 columns of the dataframe
-gen_tr$IF1 <- replace(gen_tr[, 8], is.na(gen_tr[, 8]), 0)
-gen_tr$IF2 <- replace(gen_tr[, 9], is.na(gen_tr[, 9]), 0)
+gen_tr <- gen_tr[complete.cases(gen_tr),]
 
 # Recalculate the dIF with the corrected IF1 and IF2 values and overwrite
 gen_tr$dIF <- gen_tr$IF2 - gen_tr$IF1
 ```
 
 
-If the expression value of a certain gene in condition is 0, when we try to obtain the IF dividing the isoform expression values by it, we obtain a non-sense mathematical result due to the fact that we are dividing by 0, and hence, R traduces this non-sense result into a NaN.
-
-However, these NaN values could be reconverted to 0, because we can assume that, as there is no gene expression under the specified condition, and subsequently there is no isoform expression under that condition, the IF in that condition is also null.
-
-So if we change the NaNs of columns 8 and 9 to 0, we can obtain proper results of dIF in column 10.
-
+If the expression value of a certain gene in condition is 0, when we try to obtain the IF dividing the isoform expression values by it, we obtain a non-sense mathematical result due to the fact that we are dividing by 0, and hence, R traduces this non-sense result into a NaN. As we are considering only the isoform switching information, these rows can be removed, since no comparison of isoform fractions across the conditions can be performed.
 
 ####  3.6  #### 
 
@@ -225,15 +223,8 @@ mean(gen_tr$dIF)
 median(gen_tr$dIF) 
 ```
 
-Regardless of performing the process taking out the NaNs rows (6) or keeping them as 0, we obtain a mean and a median very close to 0, as seen in the figure \ref{fig:histogram}. This agrees with an expected mean dIF of 0 since adding up all  the dIF values for the different isoforms of the same gene is 0 by definition (although the median does not have to be 0). However, we are not obtaining a 0 mean due to numerical errors in R
+We obtain a mean and a median very close to 0, as seen in the figure \ref{fig:histogram}. This agrees with an expected mean dIF of 0 since adding up all  the dIF values for the different isoforms of the same gene is 0 by definition (although the median does not have to be 0). However, we are not obtaining a 0 mean due to numerical errors in R. In conclusion, the mean and the median don't provide any summary information of the data.
 
-Mean and median dIF values keeping the NaNs ds 0
-* Mean -> -5.503846e-09
-* Median -> 1.720652e-05
-
-Mean and median dIF values taking out the NaNs
-* Mean -> 0.0092
-* Median -> 0.0015 
 
 ```{r, echo = 1, fig.width = 3, fig.height = 2}
 # Histogram of the distribution of dIF values
@@ -258,28 +249,8 @@ gen_tr_pot$pvals <- splicing[match(gen_tr_pot$gene_id, splicing$gene_id), 12]
 ####  3.8  #### 
 
 ```{r}
-# TRANSCRIPT ID of the gene with the lowest p-value in the gen_tr_pot DF
-
-# Order the data frame by p values in ascending order,
-# select the gene_id column, make the ids unique and select the first one.
-# This gene_id is that with the lowest p value
-# Filter the data frame by selecting the rows where gene_id is this id
-
-# Once you filter like this, select the column transcript_id
 filter(gen_tr_pot, gene_id == gen_tr_pot %>% arrange(pvals) %>% .$gene_id %>%
-         as.character() %>% unique %>% .[1]) %>%  .$transcript_id %>% as.character
-
-# GENE NAME of the gene with the lowest p-value in the gen_tr_pot DF
-gen_tr_pot[which.min(gen_tr_pot$pvals), 2] %>% as.character
-
-# dIF VALUE of the gene with the lowest p-value in the gen_tr_pot DF
-# The dIF values.  
- filter(gen_tr_pot, gene_id == gen_tr_pot %>% arrange(pvals) %>% .$gene_id %>%
-          as.character() %>% unique %>% .[1]) %>% .$dIF
- 
-
-# P-VALUE of the gene with the lowest p-value in the gen_tr_pot DF
-gen_tr_pot[which.min(gen_tr_pot$pvals), 11]
+         as.character() %>% unique %>% .[1]) %>% select(transcript_id, gene, dIF, pvals)
 ```
 
 Gene id is  uc001aeo.3. It is named CPTP in the RefSeq track, while in the UCSC genes track it's GLTPD1.
