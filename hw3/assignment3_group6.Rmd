@@ -22,16 +22,18 @@ theme_set(theme_bw())
 
 # Part 1
 ## (1)
-Just because IRX3 shows a higher signal than RXR in both microarray experiments, it does not necessarily mean that it is more expressed, as this signal can also be influenced by two main sources of variations unrelated to the gene expression: a global variation (a differential RNA quality of both genes, a different sample preparation process, etc) and a gene-specific variation (a differential tendency of both genes for dyeing, their potential inherent biological variations, etc). Both variations can be reduced by taking replicates, and the systematic variation can be specifically tackled by performing a systematic analysis of normalized data.
-
-## I don't understand what you mean with "a differential tendency of both genes of dying"?
+Just because IRX3 shows a higher signal than RXR in both microarray experiments, it does not necessarily mean that it is more expressed, as this signal is influenced by methodological artifacts. Th detected signal can be confounded by global effects such as differential sample preparation process, and local effects such as gene specific variation. For instance, a gene with high tendency to dyeing will likely produce a stronger signal than another gene with a feeble one regardless of their actual levels of expression. This could potentially overlook the biological insight, however replicates and normalization techniques can solve the issue.
 
 ## (2) 
 
-* $H_0$: Mean of expression values across the AIDS and the control patients is similar.
-               $\mu_{control}$ = $\mu_{AIDS}$
-* $H_1$: Mean of expression values across the AIDS and the control patients is different.
-               $\mu_{control}$ $\neq$ $\mu_{AIDS}$
+* $H_0$: Mean of expression values across the HIV and the control patients are the same
+
+               $$\mu_{control} = \mu_{AIDS}$$
+
+               
+* $H_1$: Mean of expression values across the HIV and the control patients are different from each other.
+
+               $$\mu_{control} \neq \mu_{AIDS}$$
                
 We need to test the difference of means for two distributions of expression values for every gene in the dataset. As there is no evidence showing the values don't follow a normal distribution, we don't reject it and thus assume that the mean of each sample is student's-t distributed. Therefore we decided to use the student's t test.
 
@@ -53,7 +55,7 @@ False positives = 5% of all tests
 ```{r}
 round(0.05 * length(pvals), 0)
 ```
-The expected number of false positives is 5% of the set of significant results which is 96, or 5% of the 1911 significant differentially expresses genes (p-value < 0.05).
+<!-- The expected number of false positives is 5% of the set of significant results which is 96, or 5% of the 1911 significant differentially expresses genes (p-value < 0.05).-->
 
 ## (4) 
 
@@ -100,7 +102,7 @@ genes_FDR_lower_0.2 <- log2(df[which(BH_pvals < 0.2), 11]) -
 genes_FDR_lower_0.2
 
 ```
-It is interesting to point out that the 12 genes with a significative fold change are all upregulated  in the HIV patients, where the gene with the sharpest displaying a 50% increase. ($log_2(FC) = 0.6$).
+It is interesting to point out that the 12 genes with a significative fold change are all upregulated  in the HIV patients, where the gene with the highest fold change had a 50% higher expression level. ($log_2(FC) = 0.6$). However, some of the genes with the lowest fold changes might not be biologically significant.
 
 
 \newpage
@@ -144,8 +146,6 @@ The biochemistry of RNA-Seq library preparation results in cDNA fragments that a
 Based on answer by Merico (see References)  .
 
 Cuffidff performs several tests, one of them being "Splicing differential expression". This looks at the distribution of isoforms of each gene and compares it with those found in other conditions. The statistic will sense local isoforms enrichments across conditions.
-
-
 
 # Part 3
 ```{r}
@@ -194,14 +194,11 @@ dim(gen_tr)    # 98 rows, 7 columns
 ####  3.5  #### 
 
 ```{r}
-# Calculate the IF for each transcript in both conditions (IF = isoform_exp / gene_exp) and the dIF
-# (IF2 - IF1)
+# Calculate the IF for each transcript in both conditions
+# (IF = isoform_exp / gene_exp) and the dIF (IF2 - IF1)
 
-gen_tr$IF1 <- gen_tr$value_1.TRANSCRIPT / 
-                             gen_tr$value_1.GENE
-
-gen_tr$IF2 <- gen_tr$value_2.TRANSCRIPT / 
-  gen_tr$value_2.GENE
+gen_tr$IF1 <- gen_tr$value_1.TRANSCRIPT / gen_tr$value_1.GENE
+gen_tr$IF2 <- gen_tr$value_2.TRANSCRIPT / gen_tr$value_2.GENE
 
 gen_tr$dIF <- gen_tr$IF2 - gen_tr$IF1
 
@@ -213,7 +210,7 @@ gen_tr$dIF <- gen_tr$IF2 - gen_tr$IF1
 ```
 
 
-If the expression value of a certain gene in condition is 0, when we try to obtain the IF dividing the isoform expression values by it, we obtain a non-sense mathematical result due to the fact that we are dividing by 0, and hence, R traduces this non-sense result into a NaN. As we are considering only the isoform switching information, these rows can be removed, since no comparison of isoform fractions across the conditions can be performed.
+If the expression value of a certain gene in condition is 0, when we try to obtain the IF dividing the isoform expression values by it, we obtain a non-sense mathematical result due to the fact that we are dividing by 0, and hence, R shows this non-sense result as NaN. As we are considering only the isoform switching information, these rows can be removed, since no comparison of isoform fractions across the conditions can be performed.
 
 ####  3.6  #### 
 
@@ -223,16 +220,18 @@ mean(gen_tr$dIF)
 median(gen_tr$dIF) 
 ```
 
-We obtain a mean and a median very close to 0, as seen in the figure \ref{fig:histogram}. This agrees with an expected mean dIF of 0 since adding up all  the dIF values for the different isoforms of the same gene is 0 by definition (although the median does not have to be 0). However, we are not obtaining a 0 mean due to numerical errors in R. In conclusion, the mean and the median don't provide any summary information of the data.
-
-
-```{r, echo = 1, fig.width = 3, fig.height = 2}
+```{r, echo = F, include = F}
 # Histogram of the distribution of dIF values
 png(file = "dif_histogram.png", height = 200, width = 250)
 hist(gen_tr$dIF, breaks = 40, main = "Distribution of dIF values", xlab = "dIF")
 dev.off()
 ```
 ![Distribution of the Isoform Fraction differential (dif) across conditions one and two. By definition the average dif is 0 and deviations from this number are due to numerical errors. The median should also equal to 0 if all genes had an even number of isoforms, which is hardly the case. However, this will generate small deviations from 0. \label{fig:histogram}](dif_histogram.png)
+
+
+We obtain a mean and a median very close to 0, as seen in the figure \ref{fig:histogram}. This agrees with an expected mean dIF of 0 since adding up all  the dIF values for the different isoforms of the same gene is 0 by definition (although the median does not have to be 0). However, we are not obtaining a 0 mean due to numerical errors in R. In conclusion, the mean and the median don't provide any summary information of the data.
+
+
 
 
 ####  3.7  #### 
@@ -253,6 +252,8 @@ filter(gen_tr_pot, gene_id == gen_tr_pot %>% arrange(pvals) %>% .$gene_id %>%
          as.character() %>% unique %>% .[1]) %>% select(transcript_id, gene, dIF, pvals)
 ```
 
+#### 3.9 ####
+
 Gene id is  uc001aeo.3. It is named CPTP in the RefSeq track, while in the UCSC genes track it's GLTPD1.
 
 The full name of the gene is ceramide-1-phosphate transfer protein.
@@ -272,10 +273,11 @@ As can be seen in figure \ref{fig:pdb}, this gene lies in the forward strand and
 
 The structure of this protein is available at the PDB (under entry 4K84). It displays an all alpha fold, where most of the residues lie within an alpha helix. In figure \ref{fig:pdb} one can see that this second exon is spliced in TCONS_0000021, consists of almost two full helices. Only the C-terminus residues of the second helix are encoded in the third exon. This means that the protein product originating from the translation of TCONS_0000021 would lack the N$\alpha$ helix as well as most of the next helix.
 
-The CPTP domain consists of a double layer of alpha helices generating a hydrophobic pocket that allows for the transfer of lipids across membranes. This pocket is sealed by two Leu residues within  the N$\alpha$ helix (Simanshu _et al_). According to this, this hydrophobic pocket would be severely affected in protein product encoded by TCONS_0000021.
+The CPTP domain consists of a double layer of alpha helices generating a hydrophobic pocket that allows for the transfer of lipids across membranes. This pocket is sealed by two Leu residues within  the N$\alpha$ helix (Simanshu _et al_). According to this, this hydrophobic pocket would be severely affected in protein product encoded by TCONS_0000021 (see figure \ref{fig:pymol}).
 
-
-![Pocket generated by the alpha helices in the GLTP domain. Green helices shape one side of the pocket. The blue and red helices enclose the pocket on the other side. The red helices are coded in exon 2 and are lost in the protein encoded by the TCONS_0000021 transcript.\label{fig:pymol}](sandwhich.png)
+<div style="width:30px; height=20px">
+![Pocket generated by the alpha helices in the GLTP domain. Green helices shape one side of the pocket. The blue and red helices enclose the pocket on the other side. The red helices are coded in exon 2 and are lost in the protein encoded by the TCONS_0000021. transcript.\label{fig:pymol}](sandwhich.png)
+</div>
 
 Since TCONS_0000021 expression decreases one order of magnitude when transitioning to condition 2, this analysis provides evidence for an inhibition of the expression of its truncated protein in condition 2. This is quite interesting since TCONS_0000022 does not change its expression that much. This means that TCONS_0000021 regulation's does not act at the promoter level but at another downstream process. Even if TCONS_0000022 expression does not change that much, this could either mean that the full protein remains produced in a similar amount, or that there other inhibitory mechanisms acting postranscriptionally.
 
@@ -285,7 +287,7 @@ knitr::kable(out, digits=2, col.names = c("Transcript", "Expression condition 1"
 ```
 
 
-In conclusion, this analysis on has revealed that the _gltpd1_ gene, producing to isoforms experiences an isoform switch. TCONS_0000021 expression decreases by almost 90%, while TCONS_0000022 remains similar. The structural difference of the proteins encoded by two isoforms, where the first isoforms codes for a protein with a truncated domain, provides an interesting insight in to the biology of lipid transfer across membranes and the function of the _gltpd1_ gene.
+In conclusion, this analysis has revealed that the _gltpd1_ gene, producing to isoforms experiences an isoform switch. TCONS_0000021 expression decreases by almost 90%, while TCONS_0000022 remains similar. The structural difference of the proteins encoded by two isoforms, where the first isoforms codes for a protein with a truncated domain, provides an interesting insight in to the biology of lipid transfer across membranes and the function of the _gltpd1_ gene.
 
 ## References
 
