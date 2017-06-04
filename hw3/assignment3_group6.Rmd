@@ -22,18 +22,16 @@ theme_set(theme_bw())
 
 # Part 1
 ## (1)
-Just because IRX3 shows a higher signal than RXR in both microarray experiments, it does not necessarily mean that it is more expressed, as this signal is influenced by methodological artifacts. Th detected signal can be confounded by global effects such as differential sample preparation process, and local effects such as gene specific variation. For instance, a gene with high tendency to dyeing will likely produce a stronger signal than another gene with a feeble one regardless of their actual levels of expression. This could potentially overlook the biological insight, however replicates and normalization techniques can solve the issue.
+Just because IRX3 shows a higher signal than RXR in both microarray experiments, it does not necessarily mean that it is more expressed, as this signal is influenced by methodological artifacts. Th detected signal can be confounded by global effects such as differential sample preparation process, and local effects such as gene specific variation. For instance, a gene with high tendency to react with the probe will likely produce a stronger signal than another gene with a feeble one regardless of their actual levels of expression. This could potentially overlook the biological insight, however replicates and normalization techniques can solve the issue.
 
 ## (2) 
 
-* $H_0$: Mean of expression values across the HIV and the control patients are the same
-
-               $$\mu_{control} = \mu_{AIDS}$$
+* $H_0$: Mean of expression values across the HIV and the control patients are the same.
+$$\mu_{control} = \mu_{HIV}$$
 
                
 * $H_1$: Mean of expression values across the HIV and the control patients are different from each other.
-
-               $$\mu_{control} \neq \mu_{AIDS}$$
+$$\mu_{control} \neq \mu_{HIV}$$
                
 We need to test the difference of means for two distributions of expression values for every gene in the dataset. As there is no evidence showing the values don't follow a normal distribution, we don't reject it and thus assume that the mean of each sample is student's-t distributed. Therefore we decided to use the student's t test.
 
@@ -132,7 +130,7 @@ Lines of the combined GTF file (combined transcriptome): 1207
 
 The number of lines in the GTF files not only reflects the transcripts but also the exons. Therefore the raw count with wc -l does not really show the size of the transcriptome sets, and a refined version should be used. We can definitely say that not all variants are available in all the local transcriptomes.
 
-![Capture of the chr1:1,000,000-1,500,00 region displaying the regions in the genome where transcripts were assembled by cufflinks (cuffmerge output). The combined or "global" transcriptome is displayed in the top track. \ref{fig:ucsc}](ucsc.png)
+![Capture of the chr1:1,000,000-1,500,00 region displaying the regions in the genome where transcripts were assembled by cufflinks (cuffmerge output). The combined or "global" transcriptome is displayed in the top track. \label{fig:ucsc}](ucsc.png)
 
 ####  2.4  #### 
 
